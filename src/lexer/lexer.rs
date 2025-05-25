@@ -37,31 +37,47 @@ impl<'a> Iterator for Lexer<'a> {
 
             match ch {
                 ',' => token = Some(Token::new(TokenKind::Comma, Span::new(i, i + 1))),
-                '/' => {
-                    match self.source.peek() {
-                        Some((_, '/')) => {
-                            while let Some((k, _)) = self.source.next_if(|(_, c)| *c != '\n') {
-                                self.last_pos = k;
-                            }
-                            token = Some(Token::new(
-                                TokenKind::SingleLineComment,
-                                Span::new(i, self.last_pos),
-                            ));
-                            // skip newline as well
-                            self.source.next();
+                '/' => match self.source.peek() {
+                    Some((_, '/')) => {
+                        while let Some((k, _)) = self.source.next_if(|(_, c)| *c != '\n') {
+                            self.last_pos = k;
                         }
-                        _ => token = Some(Token::new(TokenKind::Slash, Span::new(i, i + 1))),
+                        token = Some(Token::new(
+                            TokenKind::SingleLineComment,
+                            Span::new(i, self.last_pos),
+                        ));
+                        // skip newline as well
+                        self.source.next();
                     }
-                }
+                    _ => token = Some(Token::new(TokenKind::Slash, Span::new(i, i + 1))),
+                },
                 '+' => token = Some(Token::new(TokenKind::Plus, Span::new(i, i + 1))),
                 '-' => token = Some(Token::new(TokenKind::Minus, Span::new(i, i + 1))),
                 '*' => token = Some(Token::new(TokenKind::Asterisk, Span::new(i, i + 1))),
-                //TODO: add or equal variants
-                '>' => token = Some(Token::new(TokenKind::Greater, Span::new(i, i + 1))),
-                '<' => token = Some(Token::new(TokenKind::Less, Span::new(i, i + 1))),
-                //TODO: add equal equal
-                '=' => token = Some(Token::new(TokenKind::Equal, Span::new(i, i + 1))),
-                '!' => token = Some(Token::new(TokenKind::Bang, Span::new(i, i + 1))),
+                '>' => match self.source.peek() {
+                    Some((_, '=')) => {
+                        token = Some(Token::new(TokenKind::GreaterEqual, Span::new(i, i + 2)))
+                    }
+                    _ => token = Some(Token::new(TokenKind::Greater, Span::new(i, i + 1))),
+                },
+                '<' => match self.source.peek() {
+                    Some((_, '=')) => {
+                        token = Some(Token::new(TokenKind::LessEqual, Span::new(i, i + 2)))
+                    }
+                    _ => token = Some(Token::new(TokenKind::Less, Span::new(i, i + 1))),
+                },
+                '=' => match self.source.peek() {
+                    Some((_, '=')) => {
+                        token = Some(Token::new(TokenKind::EqualEqual, Span::new(i, i + 2)))
+                    }
+                    _ => token = Some(Token::new(TokenKind::Equal, Span::new(i, i + 1))),
+                },
+                '!' => match self.source.peek() {
+                    Some((_, '=')) => {
+                        token = Some(Token::new(TokenKind::BangEqual, Span::new(i, i + 2)))
+                    }
+                    _ => token = Some(Token::new(TokenKind::Bang, Span::new(i, i + 1))),
+                },
                 ';' => token = Some(Token::new(TokenKind::Semicolon, Span::new(i, i + 1))),
                 ':' => token = Some(Token::new(TokenKind::Colon, Span::new(i, i + 1))),
                 '(' => token = Some(Token::new(TokenKind::LParen, Span::new(i, i + 1))),
