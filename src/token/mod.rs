@@ -29,6 +29,7 @@ pub enum TokenKind {
     Integer,
     Illegal,
     Identifier,
+    KWLet,
 }
 
 pub struct Token {

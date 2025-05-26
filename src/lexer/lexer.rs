@@ -219,11 +219,26 @@ impl<'a> Iterator for Lexer<'a> {
                     while let Some((j, _)) = self.source.next_if(|(_, c)| c.is_alphanumeric()) {
                         self.last_pos = j;
                     }
-                    token = Some(self.make_token(
-                        TokenKind::Identifier,
-                        start_offset,
-                        self.last_pos + 1,
-                    ));
+                    let token_span = self
+                        .source_file
+                        .borrow()
+                        .make_span(start_offset, self.last_pos + 1);
+                    match self.source_file.borrow().span_text(&token_span) {
+                        "let" => {
+                            token = Some(self.make_token(
+                                TokenKind::KWLet,
+                                start_offset,
+                                self.last_pos + 1,
+                            ))
+                        }
+                        _ => {
+                            token = Some(self.make_token(
+                                TokenKind::Identifier,
+                                start_offset,
+                                self.last_pos + 1,
+                            ))
+                        }
+                    }
                 }
                 _ => {
                     token =
@@ -365,6 +380,10 @@ mod tests {
             TokenTestCase {
                 input: "foobar",
                 expected: TokenKind::Identifier,
+            },
+            TokenTestCase {
+                input: "let",
+                expected: TokenKind::KWLet,
             },
         ];
 
