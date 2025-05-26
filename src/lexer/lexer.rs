@@ -58,8 +58,11 @@ impl<'a> Iterator for Lexer<'a> {
                         while let Some((k, _)) = self.source.next_if(|(_, c)| *c != '\n') {
                             self.last_pos = k;
                         }
-                        token =
-                            Some(self.make_token(TokenKind::SingleLineComment, i, self.last_pos));
+                        token = Some(self.make_token(
+                            TokenKind::SingleLineComment,
+                            i,
+                            self.last_pos + 1,
+                        ));
                         // skip newline as well
                         self.source.next();
                     }
@@ -94,8 +97,27 @@ impl<'a> Iterator for Lexer<'a> {
                 ')' => token = Some(self.make_token(TokenKind::RParen, i, i + 1)),
                 '{' => token = Some(self.make_token(TokenKind::LBrace, i, i + 1)),
                 '}' => token = Some(self.make_token(TokenKind::RBrace, i, i + 1)),
-                '"' => todo!(),
-                c if c.is_numeric() => todo!(),
+                '"' => {
+                    //TODO: could be potentially replaced with .by_ref().take_while().last()
+                    while let Some((j, _)) = self.source.next_if(|(_, c)| *c != '"') {
+                        self.last_pos = j;
+                    }
+                    //we're either looking at a " or reached the end of file
+                    let next_peek = self.source.next();
+                    if next_peek.is_some_and(|(_, c)| c == '"') {
+                        token = Some(self.make_token(TokenKind::StringLit, i, self.last_pos + 2));
+                    } else {
+                        token =
+                            Some(self.make_token(TokenKind::UnbalancedQuote, i, self.last_pos + 1))
+                    }
+                }
+                c if c.is_numeric() => {
+                    while let Some((j, _)) = self.source.next_if(|(_, c)| c.is_numeric()) {
+                        self.last_pos = j;
+                    }
+                    //TODO: add float lexing
+                    token = Some(self.make_token(TokenKind::Integer, i, self.last_pos + 1));
+                }
                 c if c.is_alphabetic() => todo!(),
                 _ => unreachable!("Oh well"),
             }

@@ -22,6 +22,9 @@ pub enum TokenKind {
     RParen,
     LBrace,
     RBrace,
+    StringLit,
+    UnbalancedQuote,
+    Integer,
 }
 
 pub struct Token {
