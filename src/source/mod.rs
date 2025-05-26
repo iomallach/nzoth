@@ -24,8 +24,11 @@ impl<'a> SourceFile<'a> {
     }
 
     pub fn position_at_offset(&self, offset: usize) -> Position {
-        //TODO: unwrap???
-        let line = self.line_offsets.binary_search(&offset).unwrap();
+        let line = self
+            .line_offsets
+            .binary_search(&offset)
+            // Err(e) contains the position where it would be inserted
+            .unwrap_or_else(|i| i.saturating_sub(1));
         let column = offset - self.line_offsets[line];
 
         Position {
