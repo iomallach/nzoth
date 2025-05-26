@@ -48,11 +48,13 @@ impl<'a> Iterator for Lexer<'a> {
 
         self.eat_whitespaces();
 
-        if let Some((i, ch)) = self.source.next() {
-            self.last_pos = i;
+        if let Some((start_offset, ch)) = self.source.next() {
+            self.last_pos = start_offset;
 
             match ch {
-                ',' => token = Some(self.make_token(TokenKind::Comma, i, i + 1)),
+                ',' => {
+                    token = Some(self.make_token(TokenKind::Comma, start_offset, start_offset + 1))
+                }
                 '/' => match self.source.peek() {
                     Some((_, '/')) => {
                         while let Some((k, _)) = self.source.next_if(|(_, c)| *c != '\n') {
@@ -60,43 +62,118 @@ impl<'a> Iterator for Lexer<'a> {
                         }
                         token = Some(self.make_token(
                             TokenKind::SingleLineComment,
-                            i,
+                            start_offset,
                             self.last_pos + 1,
                         ));
                         // skip newline as well
                         self.source.next();
                     }
-                    _ => token = Some(self.make_token(TokenKind::Slash, i, i + 1)),
-                },
-                '+' => token = Some(self.make_token(TokenKind::Plus, i, i + 1)),
-                '-' => token = Some(self.make_token(TokenKind::Minus, i, i + 1)),
-                '*' => token = Some(self.make_token(TokenKind::Asterisk, i, i + 1)),
-                '>' => match self.source.peek() {
-                    Some((_, '=')) => {
-                        token = Some(self.make_token(TokenKind::GreaterEqual, i, i + 2))
+                    _ => {
+                        token =
+                            Some(self.make_token(TokenKind::Slash, start_offset, start_offset + 1))
                     }
-                    _ => token = Some(self.make_token(TokenKind::Greater, i, i + 1)),
+                },
+                '+' => match self.source.peek() {
+                    Some((j, '+')) => {
+                        let end_offset = j + 1;
+                        token =
+                            Some(self.make_token(TokenKind::PlusPlus, start_offset, end_offset));
+                        self.source.next();
+                    }
+                    _ => {
+                        token =
+                            Some(self.make_token(TokenKind::Plus, start_offset, start_offset + 1))
+                    }
+                },
+                '-' => match self.source.peek() {
+                    Some((j, '-')) => {
+                        let end_offset = j + 1;
+                        token =
+                            Some(self.make_token(TokenKind::MinusMinus, start_offset, end_offset));
+                        self.source.next();
+                    }
+                    _ => {
+                        token =
+                            Some(self.make_token(TokenKind::Minus, start_offset, start_offset + 1))
+                    }
+                },
+                '*' => {
+                    token =
+                        Some(self.make_token(TokenKind::Asterisk, start_offset, start_offset + 1))
+                }
+                '>' => match self.source.peek() {
+                    Some((j, '=')) => {
+                        let end_offset = j + 1;
+                        token = Some(self.make_token(
+                            TokenKind::GreaterEqual,
+                            start_offset,
+                            end_offset,
+                        ));
+                        self.source.next();
+                    }
+                    _ => {
+                        token = Some(self.make_token(
+                            TokenKind::Greater,
+                            start_offset,
+                            start_offset + 1,
+                        ))
+                    }
                 },
                 '<' => match self.source.peek() {
-                    Some((_, '=')) => token = Some(self.make_token(TokenKind::LessEqual, i, i + 2)),
-                    _ => token = Some(self.make_token(TokenKind::Less, i, i + 1)),
+                    Some((j, '=')) => {
+                        let end_offset = j + 1;
+                        token =
+                            Some(self.make_token(TokenKind::LessEqual, start_offset, end_offset));
+                        self.source.next();
+                    }
+                    _ => {
+                        token =
+                            Some(self.make_token(TokenKind::Less, start_offset, start_offset + 1))
+                    }
                 },
                 '=' => match self.source.peek() {
-                    Some((_, '=')) => {
-                        token = Some(self.make_token(TokenKind::EqualEqual, i, i + 2))
+                    Some((j, '=')) => {
+                        let end_offset = j + 1;
+                        token =
+                            Some(self.make_token(TokenKind::EqualEqual, start_offset, end_offset));
+                        self.source.next();
                     }
-                    _ => token = Some(self.make_token(TokenKind::Equal, i, i + 1)),
+                    _ => {
+                        token =
+                            Some(self.make_token(TokenKind::Equal, start_offset, start_offset + 1))
+                    }
                 },
                 '!' => match self.source.peek() {
-                    Some((_, '=')) => token = Some(self.make_token(TokenKind::BangEqual, i, i + 2)),
-                    _ => token = Some(self.make_token(TokenKind::Bang, i, i + 1)),
+                    Some((j, '=')) => {
+                        let end_offset = j + 1;
+                        token =
+                            Some(self.make_token(TokenKind::BangEqual, start_offset, end_offset));
+                        self.source.next();
+                    }
+                    _ => {
+                        token =
+                            Some(self.make_token(TokenKind::Bang, start_offset, start_offset + 1))
+                    }
                 },
-                ';' => token = Some(self.make_token(TokenKind::Semicolon, i, i + 1)),
-                ':' => token = Some(self.make_token(TokenKind::Colon, i, i + 1)),
-                '(' => token = Some(self.make_token(TokenKind::LParen, i, i + 1)),
-                ')' => token = Some(self.make_token(TokenKind::RParen, i, i + 1)),
-                '{' => token = Some(self.make_token(TokenKind::LBrace, i, i + 1)),
-                '}' => token = Some(self.make_token(TokenKind::RBrace, i, i + 1)),
+                ';' => {
+                    token =
+                        Some(self.make_token(TokenKind::Semicolon, start_offset, start_offset + 1))
+                }
+                ':' => {
+                    token = Some(self.make_token(TokenKind::Colon, start_offset, start_offset + 1))
+                }
+                '(' => {
+                    token = Some(self.make_token(TokenKind::LParen, start_offset, start_offset + 1))
+                }
+                ')' => {
+                    token = Some(self.make_token(TokenKind::RParen, start_offset, start_offset + 1))
+                }
+                '{' => {
+                    token = Some(self.make_token(TokenKind::LBrace, start_offset, start_offset + 1))
+                }
+                '}' => {
+                    token = Some(self.make_token(TokenKind::RBrace, start_offset, start_offset + 1))
+                }
                 '"' => {
                     //TODO: could be potentially replaced with .by_ref().take_while().last()
                     while let Some((j, _)) = self.source.next_if(|(_, c)| *c != '"') {
@@ -105,21 +182,44 @@ impl<'a> Iterator for Lexer<'a> {
                     //we're either looking at a " or reached the end of file
                     let next_peek = self.source.next();
                     if next_peek.is_some_and(|(_, c)| c == '"') {
-                        token = Some(self.make_token(TokenKind::StringLit, i, self.last_pos + 2));
+                        token = Some(self.make_token(
+                            TokenKind::StringLit,
+                            start_offset,
+                            self.last_pos + 2,
+                        ));
                     } else {
-                        token =
-                            Some(self.make_token(TokenKind::UnbalancedQuote, i, self.last_pos + 1))
+                        token = Some(self.make_token(
+                            TokenKind::UnbalancedQuote,
+                            start_offset,
+                            self.last_pos + 1,
+                        ))
                     }
                 }
                 c if c.is_numeric() => {
                     while let Some((j, _)) = self.source.next_if(|(_, c)| c.is_numeric()) {
                         self.last_pos = j;
                     }
+                    // handle cases like 134ab, which is illegal
+                    if self.source.peek().is_some_and(|(_, c)| !c.is_whitespace()) {
+                        token = Some(self.make_token(
+                            TokenKind::Illegal,
+                            start_offset,
+                            self.last_pos + 2,
+                        ));
+                    } else {
+                        token = Some(self.make_token(
+                            TokenKind::Integer,
+                            start_offset,
+                            self.last_pos + 1,
+                        ));
+                    }
                     //TODO: add float lexing
-                    token = Some(self.make_token(TokenKind::Integer, i, self.last_pos + 1));
                 }
                 c if c.is_alphabetic() => todo!(),
-                _ => unreachable!("Oh well"),
+                _ => {
+                    token =
+                        Some(self.make_token(TokenKind::Illegal, start_offset, start_offset + 1))
+                }
             }
         }
 
@@ -128,4 +228,144 @@ impl<'a> Iterator for Lexer<'a> {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use crate::source::SourceFile;
+
+    use super::*;
+
+    struct TokenTestCase {
+        pub input: &'static str,
+        pub expected: TokenKind,
+    }
+
+    #[test]
+    fn test_individual_tokens() {
+        let test_source = vec![
+            TokenTestCase {
+                input: ",",
+                expected: TokenKind::Comma,
+            },
+            TokenTestCase {
+                input: "/",
+                expected: TokenKind::Slash,
+            },
+            TokenTestCase {
+                input: "//comment\n",
+                expected: TokenKind::SingleLineComment,
+            },
+            TokenTestCase {
+                input: "//comment",
+                expected: TokenKind::SingleLineComment,
+            },
+            TokenTestCase {
+                input: "+",
+                expected: TokenKind::Plus,
+            },
+            TokenTestCase {
+                input: "-",
+                expected: TokenKind::Minus,
+            },
+            TokenTestCase {
+                input: "*",
+                expected: TokenKind::Asterisk,
+            },
+            TokenTestCase {
+                input: ">",
+                expected: TokenKind::Greater,
+            },
+            TokenTestCase {
+                input: ">=",
+                expected: TokenKind::GreaterEqual,
+            },
+            TokenTestCase {
+                input: "<",
+                expected: TokenKind::Less,
+            },
+            TokenTestCase {
+                input: "<=",
+                expected: TokenKind::LessEqual,
+            },
+            TokenTestCase {
+                input: "=",
+                expected: TokenKind::Equal,
+            },
+            TokenTestCase {
+                input: "==",
+                expected: TokenKind::EqualEqual,
+            },
+            TokenTestCase {
+                input: "!",
+                expected: TokenKind::Bang,
+            },
+            TokenTestCase {
+                input: "!=",
+                expected: TokenKind::BangEqual,
+            },
+            TokenTestCase {
+                input: ";",
+                expected: TokenKind::Semicolon,
+            },
+            TokenTestCase {
+                input: ":",
+                expected: TokenKind::Colon,
+            },
+            TokenTestCase {
+                input: "(",
+                expected: TokenKind::LParen,
+            },
+            TokenTestCase {
+                input: ")",
+                expected: TokenKind::RParen,
+            },
+            TokenTestCase {
+                input: "{",
+                expected: TokenKind::LBrace,
+            },
+            TokenTestCase {
+                input: "}",
+                expected: TokenKind::RBrace,
+            },
+            TokenTestCase {
+                input: "\"string_lit\"",
+                expected: TokenKind::StringLit,
+            },
+            TokenTestCase {
+                input: "\"unbalanced",
+                expected: TokenKind::UnbalancedQuote,
+            },
+            TokenTestCase {
+                input: "1234",
+                expected: TokenKind::Integer,
+            },
+            TokenTestCase {
+                input: "124ab",
+                expected: TokenKind::Illegal,
+            },
+            TokenTestCase {
+                input: "12!",
+                expected: TokenKind::Illegal,
+            },
+            TokenTestCase {
+                input: "++",
+                expected: TokenKind::PlusPlus,
+            },
+            TokenTestCase {
+                input: "--",
+                expected: TokenKind::MinusMinus,
+            },
+        ];
+
+        for s in test_source.into_iter() {
+            let source = RefCell::new(SourceFile::new(0, "test".to_string(), s.input));
+            let mut diagnostics = Diagnostics::new();
+            let mut lexer = Lexer::new(&source, &mut diagnostics);
+            let token = lexer
+                .next()
+                .expect(&format!("Unexpected end of file while lexing {}", s.input));
+
+            assert_eq!(token.kind, s.expected);
+        }
+    }
+
+    //TODO: add a comprehensive integration test for a code piece once the lexer is complete
+}

@@ -1,11 +1,13 @@
 use crate::source::Span;
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum TokenKind {
-    Eof,
     Comma,
     SingleLineComment,
     Plus,
+    PlusPlus,
     Minus,
+    MinusMinus,
     Slash,
     Asterisk,
     Greater,
@@ -25,11 +27,12 @@ pub enum TokenKind {
     StringLit,
     UnbalancedQuote,
     Integer,
+    Illegal,
 }
 
 pub struct Token {
-    kind: TokenKind,
-    span: Span,
+    pub kind: TokenKind,
+    pub span: Span,
 }
 
 impl Token {
