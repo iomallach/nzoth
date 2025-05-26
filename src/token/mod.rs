@@ -28,6 +28,7 @@ pub enum TokenKind {
     UnbalancedQuote,
     Integer,
     Illegal,
+    Identifier,
 }
 
 pub struct Token {

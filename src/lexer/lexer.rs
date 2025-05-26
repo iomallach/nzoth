@@ -215,10 +215,19 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                     //TODO: add float lexing
                 }
-                c if c.is_alphabetic() => todo!(),
+                c if c.is_alphabetic() => {
+                    while let Some((j, _)) = self.source.next_if(|(_, c)| c.is_alphanumeric()) {
+                        self.last_pos = j;
+                    }
+                    token = Some(self.make_token(
+                        TokenKind::Identifier,
+                        start_offset,
+                        self.last_pos + 1,
+                    ));
+                }
                 _ => {
                     token =
-                        Some(self.make_token(TokenKind::Illegal, start_offset, start_offset + 1))
+                        Some(self.make_token(TokenKind::Illegal, start_offset, start_offset + 1));
                 }
             }
         }
@@ -352,6 +361,10 @@ mod tests {
             TokenTestCase {
                 input: "--",
                 expected: TokenKind::MinusMinus,
+            },
+            TokenTestCase {
+                input: "foobar",
+                expected: TokenKind::Identifier,
             },
         ];
 
