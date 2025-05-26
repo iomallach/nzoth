@@ -1,3 +1,5 @@
+use crate::source::Span;
+
 pub enum TokenKind {
     Eof,
     Comma,
@@ -30,16 +32,5 @@ pub struct Token {
 impl Token {
     pub fn new(kind: TokenKind, span: Span) -> Self {
         Self { kind, span }
-    }
-}
-
-pub struct Span {
-    start: usize,
-    end: usize,
-}
-
-impl Span {
-    pub fn new(start: usize, end: usize) -> Self {
-        Self { start, end }
     }
 }

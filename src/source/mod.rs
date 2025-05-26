@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct FileId(usize);
 
 #[derive(Debug)]
@@ -48,6 +48,14 @@ impl<'a> SourceFile<'a> {
         };
 
         &self.contents[line_start..line_end]
+    }
+
+    pub fn make_span(&self, offset_start: usize, offset_end: usize) -> Span {
+        Span {
+            start: self.position_at_offset(offset_start),
+            end: self.position_at_offset(offset_end),
+            file: self.id,
+        }
     }
 }
 
