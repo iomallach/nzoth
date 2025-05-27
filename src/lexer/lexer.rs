@@ -180,8 +180,8 @@ impl<'a> Iterator for Lexer<'a> {
                         self.last_pos = j;
                     }
                     //we're either looking at a " or reached the end of file
-                    let next_peek = self.source.next();
-                    if next_peek.is_some_and(|(_, c)| c == '"') {
+                    let next = self.source.next();
+                    if next.is_some_and(|(_, c)| c == '"') {
                         token = Some(self.make_token(
                             TokenKind::StringLit,
                             start_offset,
@@ -201,6 +201,8 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                     // handle cases like 134ab, which is illegal
                     if self.source.peek().is_some_and(|(_, c)| !c.is_whitespace()) {
+                        //TODO: ^ is wrong, we should rather look for an alphabetic and mark it
+                        //illegal. Also consume until not alphanumeric
                         token = Some(self.make_token(
                             TokenKind::Illegal,
                             start_offset,
@@ -231,12 +233,26 @@ impl<'a> Iterator for Lexer<'a> {
                                 self.last_pos + 1,
                             ))
                         }
+                        "true" => {
+                            token = Some(self.make_token(
+                                TokenKind::KWTrue,
+                                start_offset,
+                                self.last_pos + 1,
+                            ));
+                        }
+                        "false" => {
+                            token = Some(self.make_token(
+                                TokenKind::KWFalse,
+                                start_offset,
+                                self.last_pos + 1,
+                            ));
+                        }
                         _ => {
                             token = Some(self.make_token(
                                 TokenKind::Identifier,
                                 start_offset,
                                 self.last_pos + 1,
-                            ))
+                            ));
                         }
                     }
                 }
@@ -263,7 +279,7 @@ mod tests {
     }
 
     #[test]
-    fn test_individual_tokens() {
+    fn test_happypath_individual_tokens() {
         let test_source = vec![
             TokenTestCase {
                 input: ",",
@@ -384,6 +400,14 @@ mod tests {
             TokenTestCase {
                 input: "let",
                 expected: TokenKind::KWLet,
+            },
+            TokenTestCase {
+                input: "true",
+                expected: TokenKind::KWTrue,
+            },
+            TokenTestCase {
+                input: "false",
+                expected: TokenKind::KWFalse,
             },
         ];
 

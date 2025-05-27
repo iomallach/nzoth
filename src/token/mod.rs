@@ -30,6 +30,8 @@ pub enum TokenKind {
     Illegal,
     Identifier,
     KWLet,
+    KWTrue,
+    KWFalse,
 }
 
 pub struct Token {
