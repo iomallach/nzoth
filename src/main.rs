@@ -1,3 +1,4 @@
+mod ast;
 mod diagnostics;
 mod lexer;
 mod source;
