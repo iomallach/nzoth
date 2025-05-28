@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-use crate::source::Span;
+use crate::{source::Span, token::TokenKind};
 
 pub struct Program {
     pub nodes: Vec<AstNode>,
@@ -55,6 +55,17 @@ pub enum Expression {
     Infix(Box<Expression>, InfixOp, Box<Expression>, Span),
 }
 
+impl Expression {
+    pub fn span(&self) -> Span {
+        match self {
+            Expression::NumericLiteral(_, span) => span.clone(),
+            Expression::Bool(_, span) => span.clone(),
+            Expression::Prefix(_, _, span) => span.clone(),
+            Expression::Infix(_, _, _, span) => span.clone(),
+        }
+    }
+}
+
 pub enum NumericLiteral {
     Integer(i64),
 }
@@ -77,10 +88,55 @@ pub enum InfixOp {
     GreaterThanEquals,
 }
 
+impl From<&str> for InfixOp {
+    fn from(value: &str) -> Self {
+        match value {
+            "+" => Self::Add,
+            "-" => Self::Subtract,
+            "*" => Self::Multiply,
+            "/" => Self::Divide,
+            "=" => Self::Equals,
+            "!=" => Self::NotEquals,
+            "<" => Self::LessThan,
+            "<=" => Self::LessThanEquals
+            ">" => Self::GreaterThan,
+            ">=" => Self::GreaterThanEquals,
+            _ => unreachable!(),
+        }
+    }
+}
+
+#[derive(PartialOrd, PartialEq)]
 #[repr(u8)]
 pub enum Precedence {
     Lowest,
     Equals,
     Less,
     Add,
+    Product,
+    Prefix,
+    Call,
+    Index,
 }
+
+impl From<TokenKind> for Precedence {
+    fn from(value: TokenKind) -> Self {
+        match value {
+            TokenKind::Plus => Self::Add,
+            _ => Self::Lowest,
+        }
+    }
+}
+// .EQUAL_EQUAL => Precedence.EQUALS,
+// .BANG_EQUAL => Precedence.EQUALS,
+// .LESS => Precedence.LESSGREATER,
+// .LESS_EQUAL => Precedence.LESSGREATER,
+// .GREATER => Precedence.LESSGREATER,
+// .GREATER_EQUAL => Precedence.LESSGREATER,
+// .PLUS => Precedence.SUM,
+// .MINUS => Precedence.SUM,
+// .SLASH => Precedence.PRODUCT,
+// .ASTERISK => Precedence.PRODUCT,
+// .LPAREN => Precedence.CALL,
+// .LBRACKET => Precedence.INDEX,
+// else => Precedence.LOWEST,
