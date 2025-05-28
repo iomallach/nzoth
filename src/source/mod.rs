@@ -62,14 +62,14 @@ impl<'a> SourceFile<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Position {
     pub offset: usize,
     pub line: usize,
     pub column: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Span {
     pub start: Position,
     pub end: Position,

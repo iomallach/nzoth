@@ -5,7 +5,7 @@ use std::cell::RefCell;
 use std::{iter::Peekable, str::CharIndices};
 
 pub struct Lexer<'a> {
-    source_file: &'a RefCell<SourceFile<'a>>,
+    pub source_file: &'a RefCell<SourceFile<'a>>,
     source: Peekable<CharIndices<'a>>,
     last_pos: usize,
     diagnostics: &'a mut Diagnostics,
@@ -160,7 +160,17 @@ impl<'a> Iterator for Lexer<'a> {
                         Some(self.make_token(TokenKind::Semicolon, start_offset, start_offset + 1))
                 }
                 ':' => {
-                    token = Some(self.make_token(TokenKind::Colon, start_offset, start_offset + 1))
+                    if let Some((j, ':')) = self.source.peek() {
+                        let end_offset = j + 1;
+                        token =
+                            Some(self.make_token(TokenKind::ColonColon, start_offset, end_offset));
+                    } else {
+                        token = Some(self.make_token(
+                            TokenKind::Illegal,
+                            start_offset,
+                            start_offset + 1,
+                        ));
+                    }
                 }
                 '(' => {
                     token = Some(self.make_token(TokenKind::LParen, start_offset, start_offset + 1))
@@ -346,8 +356,12 @@ mod tests {
                 expected: TokenKind::Semicolon,
             },
             TokenTestCase {
+                input: "::",
+                expected: TokenKind::ColonColon,
+            },
+            TokenTestCase {
                 input: ":",
-                expected: TokenKind::Colon,
+                expected: TokenKind::Illegal,
             },
             TokenTestCase {
                 input: "(",
