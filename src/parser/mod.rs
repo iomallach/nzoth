@@ -1,14 +1,16 @@
 use std::cell::RefCell;
 use std::iter::Peekable;
 
-use crate::ast::{AstNode, Expression, InfixOp, NumericLiteral, Precedence, Program};
+use crate::ast::{
+    AstNode, Expression, InfixOp, LetDeclaration, NumericLiteral, Precedence, Program, Statement,
+};
 use crate::diagnostics::Diagnostics;
 use crate::lexer::lexer::Lexer;
 use crate::source::{SourceFile, Span};
 use crate::token::{Token, TokenKind};
 
-type PrefixParseFn<'a> = Box<dyn FnMut(&mut Parser) -> Result<Expression, Error>>;
-type InfixParseFn<'a> = Box<dyn FnMut(&mut Parser, Expression) -> Result<Expression, Error>>;
+type PrefixParseFn = Box<dyn FnMut(&mut Parser) -> Result<Expression, Error>>;
+type InfixParseFn = Box<dyn FnMut(&mut Parser, Expression) -> Result<Expression, Error>>;
 
 pub enum Error {
     Eof,
@@ -51,10 +53,27 @@ impl<'a> Parser<'a> {
 
     fn parse_let_declaration(&mut self) -> Result<AstNode, Error> {
         let let_token = self.lexer.next().expect("Never called before peek check");
-        let ident_token = self.expect_and_next(TokenKind::Identifier)?;
+
+        let identifier_token = self.expect_and_next(TokenKind::Identifier)?;
         //TODO: check :: and parse type
-        let equals_token = self.expect_and_next(TokenKind::Equal)?;
-        todo!("parse expression");
+        self.expect_and_next(TokenKind::Equal)?;
+
+        let expression = self.parse_expression(Precedence::Lowest)?;
+        let expression_span = expression.span();
+        let sf = self.source_file.borrow();
+
+        //TODO: figure out the span here (now line vs the span of the name)
+        Ok(AstNode::Statement(Statement::LetDeclaration(
+            LetDeclaration {
+                name: sf.span_text(&identifier_token.span).to_string(),
+                expression,
+                span: Span {
+                    start: let_token.span.start,
+                    end: expression_span.end,
+                    file: sf.id,
+                },
+            },
+        )))
     }
 
     fn parse_expression(&mut self, precedence: Precedence) -> Result<Expression, Error> {
@@ -95,7 +114,7 @@ impl<'a> Parser<'a> {
         ))
     }
 
-    fn prefix_parse_fn(&mut self) -> Result<PrefixParseFn<'a>, Error> {
+    fn prefix_parse_fn(&mut self) -> Result<PrefixParseFn, Error> {
         if let Some(token) = self.lexer.next() {
             match token.kind {
                 TokenKind::Integer => Ok(Box::new(|parser| parser.parse_integer())),
@@ -106,10 +125,13 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn infix_parse_fn(&mut self) -> Result<InfixParseFn<'a>, Error> {
+    fn infix_parse_fn(&mut self) -> Result<InfixParseFn, Error> {
         if let Some(token) = self.lexer.peek() {
             match token.kind {
                 TokenKind::Plus => Ok(Box::new(|parser, left| parser.parse_infix_expression(left))),
+                TokenKind::Minus => {
+                    Ok(Box::new(|parser, left| parser.parse_infix_expression(left)))
+                }
                 _ => todo!(),
             }
         } else {
