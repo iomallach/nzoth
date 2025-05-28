@@ -1,7 +1,29 @@
+use std::ops::{Deref, DerefMut};
+
 use crate::source::Span;
 
 pub struct Program {
-    nodes: Vec<AstNode>,
+    pub nodes: Vec<AstNode>,
+}
+
+impl Deref for Program {
+    type Target = Vec<AstNode>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.nodes
+    }
+}
+
+impl DerefMut for Program {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.nodes
+    }
+}
+
+impl Program {
+    pub fn push(&mut self, node: AstNode) {
+        self.nodes.push(node);
+    }
 }
 
 pub enum AstNode {
@@ -28,6 +50,7 @@ pub struct LetDeclaration {
 
 pub enum Expression {
     NumericLiteral(NumericLiteral, Span),
+    Bool(bool, Span),
     Prefix(PrefixOp, Box<Expression>, Span),
     Infix(Box<Expression>, InfixOp, Box<Expression>, Span),
 }
@@ -52,4 +75,12 @@ pub enum InfixOp {
     LessThanEquals,
     GreaterThan,
     GreaterThanEquals,
+}
+
+#[repr(u8)]
+pub enum Precedence {
+    Lowest,
+    Equals,
+    Less,
+    Add,
 }
