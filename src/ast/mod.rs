@@ -98,7 +98,7 @@ impl From<&str> for InfixOp {
             "=" => Self::Equals,
             "!=" => Self::NotEquals,
             "<" => Self::LessThan,
-            "<=" => Self::LessThanEquals
+            "<=" => Self::LessThanEquals,
             ">" => Self::GreaterThan,
             ">=" => Self::GreaterThanEquals,
             _ => unreachable!(),
