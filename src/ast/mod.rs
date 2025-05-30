@@ -42,7 +42,7 @@ pub enum Statement {
 }
 
 pub struct LetDeclaration {
-    pub name: String,
+    pub identifier: Expression,
     // span
     pub expression: Expression,
     pub span: Span,
@@ -51,6 +51,7 @@ pub struct LetDeclaration {
 pub enum Expression {
     NumericLiteral(NumericLiteral, Span),
     Bool(bool, Span),
+    Identifier(Span),
     Prefix(PrefixOp, Box<Expression>, Span),
     Infix(Box<Expression>, InfixOp, Box<Expression>, Span),
 }
@@ -62,6 +63,7 @@ impl Expression {
             Expression::Bool(_, span) => span.clone(),
             Expression::Prefix(_, _, span) => span.clone(),
             Expression::Infix(_, _, _, span) => span.clone(),
+            Expression::Identifier(span) => span.clone(),
         }
     }
 }

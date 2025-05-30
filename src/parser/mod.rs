@@ -4,7 +4,6 @@ use std::iter::Peekable;
 use crate::ast::{
     AstNode, Expression, InfixOp, LetDeclaration, NumericLiteral, Precedence, Program, Statement,
 };
-use crate::diagnostics::Diagnostics;
 use crate::lexer::lexer::Lexer;
 use crate::source::{SourceFile, Span};
 use crate::token::{Token, TokenKind};
@@ -20,14 +19,16 @@ pub enum Error {
 pub struct Parser<'a> {
     lexer: Peekable<Lexer<'a>>,
     source_file: &'a RefCell<SourceFile<'a>>,
+    diagnostics: Vec<String>,
 }
 
 impl<'a> Parser<'a> {
-    pub fn new(source: &'a RefCell<SourceFile<'a>>, diagnostics: &'a mut Diagnostics) -> Self {
-        let lexer = Lexer::new(source, diagnostics).peekable();
+    pub fn new(source: &'a RefCell<SourceFile<'a>>) -> Self {
+        let lexer = Lexer::new(source).peekable();
         Self {
             lexer,
             source_file: source,
+            diagnostics: vec![],
         }
     }
 
@@ -45,7 +46,7 @@ impl<'a> Parser<'a> {
 
     pub fn parse_node(&mut self) -> Result<AstNode, Error> {
         match self.peek_token_kind() {
-            TokenKind::KWLet => todo!(),
+            TokenKind::KWLet => self.parse_let_declaration(),
             TokenKind::Eof => Err(Error::Eof),
             _ => todo!(),
         }
@@ -60,12 +61,14 @@ impl<'a> Parser<'a> {
 
         let expression = self.parse_expression(Precedence::Lowest)?;
         let expression_span = expression.span();
-        let sf = self.source_file.borrow();
 
+        self.expect_and_next(TokenKind::Semicolon)?;
+
+        let sf = self.source_file.borrow();
         //TODO: figure out the span here (now line vs the span of the name)
         Ok(AstNode::Statement(Statement::LetDeclaration(
             LetDeclaration {
-                name: sf.span_text(&identifier_token.span).to_string(),
+                identifier: Expression::Identifier(identifier_token.span),
                 expression,
                 span: Span {
                     start: let_token.span.start,
@@ -99,6 +102,12 @@ impl<'a> Parser<'a> {
         ))
     }
 
+    fn parse_identifier(&mut self) -> Result<Expression, Error> {
+        self.lexer
+            .next()
+            .map_or(Err(Error::Eof), |t| Ok(Expression::Identifier(t.span)))
+    }
+
     fn parse_infix_expression(&mut self, left_expression: Expression) -> Result<Expression, Error> {
         let current_token = self.lexer.next().expect("Peek checked before calling");
         let right_expression = self.parse_expression(Precedence::from(current_token.kind))?;
@@ -115,10 +124,14 @@ impl<'a> Parser<'a> {
     }
 
     fn prefix_parse_fn(&mut self) -> Result<PrefixParseFn, Error> {
-        if let Some(token) = self.lexer.next() {
+        if let Some(token) = self.lexer.peek() {
             match token.kind {
                 TokenKind::Integer => Ok(Box::new(|parser| parser.parse_integer())),
-                _ => todo!(),
+                TokenKind::Identifier => Ok(Box::new(|parser| parser.parse_identifier())),
+                otherwise => {
+                    eprintln!("Unexpected token of kind = {}", otherwise);
+                    todo!();
+                }
             }
         } else {
             Err(Error::Eof)
@@ -159,6 +172,70 @@ impl<'a> Parser<'a> {
                 expected: typ.to_string(),
                 got: next_token.span,
             })
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::cell::{Ref, RefCell};
+
+    use crate::{
+        ast::{AstNode, Expression, NumericLiteral, Statement},
+        lexer::lexer::Lexer,
+        source::{SourceFile, Span},
+        token::{Token, TokenKind},
+    };
+
+    use super::Parser;
+
+    fn test_expression(expected: &Expression, actual: &Expression) {
+        match (expected, actual) {
+            (
+                Expression::NumericLiteral(NumericLiteral::Integer(e), _),
+                Expression::NumericLiteral(NumericLiteral::Integer(a), _),
+            ) => assert_eq!(e, a),
+            _ => unreachable!(),
+        }
+    }
+
+    fn test_identifier<'a>(expected: &str, actual: &Expression, source: Ref<SourceFile<'a>>) {
+        if let Expression::Identifier(span) = actual {
+            let actual_name = source.span_text(span);
+            assert_eq!(expected, actual_name);
+        } else {
+            unreachable!();
+        }
+    }
+
+    #[test]
+    fn test_happypath_parser_let_declarations() {
+        let tests = vec![(
+            "let foo = 1;",
+            "foo",
+            Expression::NumericLiteral(NumericLiteral::Integer(1), Span::default()),
+        )];
+
+        for (s, ident, expr) in tests {
+            let source = RefCell::new(SourceFile::new(0, "test".to_string(), s));
+
+            let mut tokens = Vec::new();
+            let mut lexer = Lexer::new(&source);
+            while let Some(token) = lexer.next() {
+                tokens.push(token);
+            }
+
+            let mut parser = Parser::new(&source);
+            let program = parser.parse();
+
+            assert_eq!(1, program.nodes.len());
+            if let AstNode::Statement(Statement::LetDeclaration(ld)) = program.nodes.get(0).unwrap()
+            {
+                test_identifier(ident, &ld.identifier, source.borrow());
+                test_expression(&expr, &ld.expression);
+            } else {
+                unreachable!();
+            }
         }
     }
 }
