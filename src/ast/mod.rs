@@ -79,9 +79,20 @@ pub enum NumericLiteral {
     Integer(i64),
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum PrefixOp {
     Negation,
     BoolNegation,
+}
+
+impl From<&str> for PrefixOp {
+    fn from(value: &str) -> Self {
+        match value {
+            "!" => Self::BoolNegation,
+            "-" => Self::Negation,
+            _ => unreachable!(),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]

@@ -3,7 +3,7 @@ use std::iter::Peekable;
 
 use crate::ast::{
     AstNode, Expression, ExpressionStatement, InfixOp, LetDeclaration, NumericLiteral, Precedence,
-    Program, Statement,
+    PrefixOp, Program, Statement,
 };
 use crate::lexer::lexer::Lexer;
 use crate::source::{SourceFile, Span};
@@ -165,12 +165,32 @@ impl<'a> Parser<'a> {
         ))
     }
 
+    fn parse_prefix_expression(&mut self) -> Result<Expression, Error> {
+        let prefix_operator_token = self.lexer.next().expect("Always checked");
+        let prefix_op = PrefixOp::from(
+            self.source_file
+                .borrow()
+                .span_text(&prefix_operator_token.span),
+        );
+        let expression = self.parse_expression(Precedence::Prefix)?;
+        let expression_span = expression.span();
+
+        Ok(Expression::Prefix(
+            prefix_op,
+            Box::new(expression),
+            Span::from_spans(prefix_operator_token.span, expression_span),
+        ))
+    }
+
     fn prefix_parse_fn(&mut self) -> Result<PrefixParseFn, Error> {
         if let Some(token) = self.lexer.peek() {
             match token.kind {
                 TokenKind::Integer => Ok(Box::new(|parser| parser.parse_integer())),
                 TokenKind::Identifier => Ok(Box::new(|parser| parser.parse_identifier())),
                 TokenKind::LParen => Ok(Box::new(|parser| parser.parse_grouped_expression())),
+                TokenKind::Minus | TokenKind::Bang => {
+                    Ok(Box::new(|parser| parser.parse_prefix_expression()))
+                }
                 otherwise => {
                     eprintln!("Unexpected token of kind = {}", otherwise);
                     todo!();
@@ -223,7 +243,7 @@ mod tests {
     use std::cell::RefCell;
 
     use crate::{
-        ast::{AstNode, Expression, InfixOp, NumericLiteral, Statement},
+        ast::{AstNode, Expression, InfixOp, NumericLiteral, PrefixOp, Statement},
         lexer::lexer::Lexer,
         source::{SourceFile, Span},
     };
@@ -338,6 +358,39 @@ mod tests {
                 test_expression(&expected_left, left);
                 test_expression(&expected_right, right);
                 assert_eq!(*op, expected_op);
+            }
+        }
+    }
+
+    #[test]
+    fn test_happypath_parse_prefix_expressions() {
+        let tests = vec![(
+            "-5;",
+            Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+            PrefixOp::Negation,
+        )];
+
+        for (code, expected_expr, expected_op) in tests {
+            let source = RefCell::new(SourceFile::new(0, "test".to_string(), code));
+
+            let mut parser = Parser::new(&source);
+            let program = parser.parse();
+
+            assert_eq!(1, program.nodes.len());
+
+            let es = if let AstNode::Statement(Statement::Expression(es)) =
+                program.nodes.into_iter().next().unwrap()
+            {
+                es.expression
+            } else {
+                unreachable!("Expected expression statemenet");
+            };
+
+            if let Expression::Prefix(op, expr, _) = es {
+                test_expression(&expected_expr, &expr);
+                assert_eq!(expected_op, op);
+            } else {
+                unreachable!("Expected a prefix expression");
             }
         }
     }
