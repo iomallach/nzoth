@@ -3,7 +3,7 @@ use std::iter::Peekable;
 
 use crate::ast::{
     AstNode, Expression, ExpressionStatement, InfixOp, LetDeclaration, NumericLiteral, Precedence,
-    PrefixOp, Program, Statement,
+    PrefixOp, Program, Statement, Type,
 };
 use crate::lexer::lexer::Lexer;
 use crate::source::{SourceFile, Span};
@@ -79,6 +79,14 @@ impl<'a> Parser<'a> {
 
         let identifier_token = self.expect_and_next(TokenKind::Identifier)?;
         //TODO: check :: and parse type
+
+        let ty = if self.match_peek_token_kind(TokenKind::ColonColon) {
+            self.lexer.next();
+            Some(self.parse_type_annotation()?)
+        } else {
+            None
+        };
+
         self.expect_and_next(TokenKind::Equal)?;
 
         let expression = self.parse_expression(Precedence::Lowest)?;
@@ -100,6 +108,7 @@ impl<'a> Parser<'a> {
                     end: expression_span.end,
                     file: sf.id,
                 },
+                ty,
             },
         )))
     }
@@ -227,6 +236,16 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn parse_type_annotation(&mut self) -> Result<Type, Error> {
+        match self.peek_token_kind() {
+            TokenKind::KWInt => {
+                self.lexer.next();
+                Ok(Type::Integer)
+            }
+            _ => todo!(),
+        }
+    }
+
     fn peek_token_kind(&mut self) -> TokenKind {
         self.lexer.peek().map_or(TokenKind::Eof, |t| t.kind)
     }
@@ -256,9 +275,10 @@ mod tests {
     use std::cell::RefCell;
 
     use crate::{
-        ast::{AstNode, Expression, InfixOp, NumericLiteral, PrefixOp, Statement},
+        ast::{AstNode, Expression, InfixOp, NumericLiteral, PrefixOp, Statement, Type},
         lexer::lexer::Lexer,
         source::{SourceFile, Span},
+        token::TokenKind,
     };
 
     use super::Parser;
@@ -289,13 +309,22 @@ mod tests {
 
     #[test]
     fn test_happypath_parser_let_declarations() {
-        let tests = vec![(
-            "let foo = 1;",
-            "foo",
-            Expression::NumericLiteral(NumericLiteral::Integer(1), Span::default()),
-        )];
+        let tests = vec![
+            (
+                "let foo = 1;",
+                "foo",
+                Expression::NumericLiteral(NumericLiteral::Integer(1), Span::default()),
+                None,
+            ),
+            (
+                "let foo :: int = 1;",
+                "foo",
+                Expression::NumericLiteral(NumericLiteral::Integer(1), Span::default()),
+                Some(Type::Integer),
+            ),
+        ];
 
-        for (s, ident, expr) in tests {
+        for (s, ident, expr, ty) in tests {
             let source = RefCell::new(SourceFile::new(0, "test".to_string(), s));
 
             let mut tokens = Vec::new();
@@ -312,6 +341,7 @@ mod tests {
             {
                 test_identifier(ident, &ld.identifier);
                 test_expression(&expr, &ld.expression);
+                assert_eq!(ty, ld.ty);
             } else {
                 unreachable!();
             }

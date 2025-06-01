@@ -46,6 +46,7 @@ pub struct LetDeclaration {
     pub identifier: Expression,
     pub expression: Expression,
     pub span: Span,
+    pub ty: Option<Type>,
 }
 
 pub struct ExpressionStatement {
@@ -77,6 +78,11 @@ impl Expression {
 
 pub enum NumericLiteral {
     Integer(i64),
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum Type {
+    Integer,
 }
 
 #[derive(Debug, PartialEq, Eq)]

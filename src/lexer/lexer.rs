@@ -162,6 +162,7 @@ impl<'a> Iterator for Lexer<'a> {
                         let end_offset = j + 1;
                         token =
                             Some(self.make_token(TokenKind::ColonColon, start_offset, end_offset));
+                        self.source.next();
                     } else {
                         token = Some(self.make_token(
                             TokenKind::Illegal,
