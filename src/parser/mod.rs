@@ -2,8 +2,8 @@ use std::cell::RefCell;
 use std::iter::Peekable;
 
 use crate::ast::{
-    AstNode, Expression, ExpressionStatement, InfixOp, LetDeclaration, NumericLiteral, Precedence,
-    PrefixOp, Program, Statement, Type,
+    AstNode, Block, Expression, ExpressionStatement, InfixOp, LetDeclaration, NumericLiteral,
+    Precedence, PrefixOp, Program, Statement, Type,
 };
 use crate::lexer::lexer::Lexer;
 use crate::source::{SourceFile, Span};
@@ -111,6 +111,39 @@ impl<'a> Parser<'a> {
                 ty,
             },
         )))
+    }
+
+    // TODO: 0% test coverage
+    fn parse_block(&mut self) -> Result<AstNode, Error> {
+        let mut nodes = vec![];
+        let opening_curly_brace = self.lexer.next().expect("Checked");
+        let mut last_expression = None;
+
+        // TODO: edge cases: empty statements, no statements
+        while !self.match_peek_token_kind(TokenKind::RBrace)
+            && !self.match_peek_token_kind(TokenKind::Eof)
+        {
+            //FIXME: sync parser on error
+            let node = self.parse_node()?;
+            if let AstNode::Expression(_) = node {
+                if last_expression.is_some() {
+                    //TODO: record error, sync parser
+                    todo!();
+                    continue;
+                }
+                last_expression = Some(node);
+            } else {
+                nodes.push(node);
+            }
+        }
+
+        let closing_curly = self.expect_and_next(TokenKind::Semicolon)?;
+
+        Ok(AstNode::Statement(Statement::Block(Block {
+            nodes,
+            last_expression: last_expression.map(|le| Box::new(le)),
+            span: Span::from_spans(opening_curly_brace.span, closing_curly.span),
+        })))
     }
 
     fn parse_expression(&mut self, precedence: Precedence) -> Result<Expression, Error> {
@@ -278,7 +311,6 @@ mod tests {
         ast::{AstNode, Expression, InfixOp, NumericLiteral, PrefixOp, Statement, Type},
         lexer::lexer::Lexer,
         source::{SourceFile, Span},
-        token::TokenKind,
     };
 
     use super::Parser;

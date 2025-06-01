@@ -34,6 +34,7 @@ pub enum AstNode {
 pub enum Statement {
     LetDeclaration(LetDeclaration),
     Expression(ExpressionStatement),
+    Block(Block),
     //function declaration
     //if statement
     //while loop statement
@@ -52,6 +53,12 @@ pub struct LetDeclaration {
 pub struct ExpressionStatement {
     pub span: Span,
     pub expression: Expression,
+}
+
+pub struct Block {
+    pub nodes: Vec<AstNode>,
+    pub last_expression: Option<Box<AstNode>>,
+    pub span: Span,
 }
 
 pub enum Expression {
