@@ -33,12 +33,13 @@ pub enum AstNode {
 
 pub enum Statement {
     LetDeclaration(LetDeclaration),
-    //function declaration
-    //if statement
-    //while loop statement
-    //for loop statement
-    //assignment
-    //import statement here or top level node
+    Expression(ExpressionStatement),
+    Assignment(Assignment), //function declaration
+                            //if statement
+                            //while loop statement
+                            //for loop statement
+                            //assignment
+                            //import statement here or top level node
 }
 
 pub struct LetDeclaration {
@@ -46,6 +47,17 @@ pub struct LetDeclaration {
     // span
     pub expression: Expression,
     pub span: Span,
+}
+
+pub struct ExpressionStatement {
+    pub span: Span,
+    pub expression: Expression,
+}
+
+pub struct Assignment {
+    pub span: Span,
+    pub identifier: Expression,
+    pub expression: Expression,
 }
 
 pub enum Expression {
@@ -79,6 +91,7 @@ pub enum PrefixOp {
 
 pub enum InfixOp {
     Add,
+    Assignment,
     Subtract,
     Multiply,
     Divide,
@@ -97,7 +110,8 @@ impl From<&str> for InfixOp {
             "-" => Self::Subtract,
             "*" => Self::Multiply,
             "/" => Self::Divide,
-            "=" => Self::Equals,
+            "=" => Self::Assignment,
+            "==" => Self::Equals,
             "!=" => Self::NotEquals,
             "<" => Self::LessThan,
             "<=" => Self::LessThanEquals,
@@ -125,6 +139,7 @@ impl From<TokenKind> for Precedence {
     fn from(value: TokenKind) -> Self {
         match value {
             TokenKind::Plus => Self::Add,
+            TokenKind::Equal => Self::Equals,
             _ => Self::Lowest,
         }
     }

@@ -2,7 +2,8 @@ use std::cell::RefCell;
 use std::iter::Peekable;
 
 use crate::ast::{
-    AstNode, Expression, InfixOp, LetDeclaration, NumericLiteral, Precedence, Program, Statement,
+    AstNode, Expression, ExpressionStatement, InfixOp, LetDeclaration, NumericLiteral, Precedence,
+    Program, Statement,
 };
 use crate::lexer::lexer::Lexer;
 use crate::source::{SourceFile, Span};
@@ -48,7 +49,33 @@ impl<'a> Parser<'a> {
         match self.peek_token_kind() {
             TokenKind::KWLet => self.parse_let_declaration(),
             TokenKind::Eof => Err(Error::Eof),
-            _ => todo!(),
+            _ => self.parse_expression_node(),
+        }
+    }
+
+    pub fn parse_expression_node(&mut self) -> Result<AstNode, Error> {
+        let start_token = self
+            .lexer
+            .peek()
+            .copied()
+            .expect("Never called before peek check");
+        let expression = self.parse_expression(Precedence::Lowest)?;
+
+        if self.match_peek_token_kind(TokenKind::Semicolon) {
+            self.lexer.next();
+            Ok(AstNode::Statement(Statement::Expression(
+                ExpressionStatement {
+                    span: start_token.span,
+                    expression,
+                },
+            )))
+        } else if self.match_peek_token_kind(TokenKind::RBrace) {
+            Ok(AstNode::Expression(expression))
+        } else {
+            Err(Error::Unexpected {
+                expected: ";".to_string(),
+                got: self.lexer.peek().unwrap().span,
+            })
         }
     }
 
@@ -81,7 +108,7 @@ impl<'a> Parser<'a> {
 
     fn parse_expression(&mut self, precedence: Precedence) -> Result<Expression, Error> {
         let mut left_expression = self.prefix_parse_fn()?(self)?;
-        // while not semicolon and prec < peek prec
+
         while !self.match_peek_token_kind(TokenKind::Semicolon)
             && precedence < self.peek_precedence()
         {
@@ -145,6 +172,9 @@ impl<'a> Parser<'a> {
                 TokenKind::Minus => {
                     Ok(Box::new(|parser, left| parser.parse_infix_expression(left)))
                 }
+                TokenKind::Equal => {
+                    Ok(Box::new(|parser, left| parser.parse_infix_expression(left)))
+                }
                 _ => todo!(),
             }
         } else {
@@ -184,7 +214,6 @@ mod tests {
         ast::{AstNode, Expression, NumericLiteral, Statement},
         lexer::lexer::Lexer,
         source::{SourceFile, Span},
-        token::{Token, TokenKind},
     };
 
     use super::Parser;
@@ -235,6 +264,24 @@ mod tests {
                 test_expression(&expr, &ld.expression);
             } else {
                 unreachable!();
+            }
+        }
+    }
+
+    #[test]
+    fn test_happypath_parse_identifier() {
+        let tests = vec![("foo;", "foo"), ("bar;", "bar")];
+
+        for (code, expected) in tests {
+            let source = RefCell::new(SourceFile::new(0, "test".to_string(), code));
+
+            let mut parser = Parser::new(&source);
+            let program = parser.parse();
+
+            assert_eq!(1, program.nodes.len());
+
+            if let AstNode::Expression(identifier) = program.nodes.get(0).unwrap() {
+                test_identifier(expected, identifier, source.borrow());
             }
         }
     }
