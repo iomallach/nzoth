@@ -34,12 +34,12 @@ pub enum AstNode {
 pub enum Statement {
     LetDeclaration(LetDeclaration),
     Expression(ExpressionStatement),
-    Assignment(Assignment), //function declaration
-                            //if statement
-                            //while loop statement
-                            //for loop statement
-                            //assignment
-                            //import statement here or top level node
+    //function declaration
+    //if statement
+    //while loop statement
+    //for loop statement
+    //assignment
+    //import statement here or top level node
 }
 
 pub struct LetDeclaration {
@@ -54,16 +54,10 @@ pub struct ExpressionStatement {
     pub expression: Expression,
 }
 
-pub struct Assignment {
-    pub span: Span,
-    pub identifier: Expression,
-    pub expression: Expression,
-}
-
 pub enum Expression {
     NumericLiteral(NumericLiteral, Span),
     Bool(bool, Span),
-    Identifier(Span),
+    Identifier(String, Span),
     Prefix(PrefixOp, Box<Expression>, Span),
     Infix(Box<Expression>, InfixOp, Box<Expression>, Span),
 }
@@ -75,7 +69,7 @@ impl Expression {
             Expression::Bool(_, span) => span.clone(),
             Expression::Prefix(_, _, span) => span.clone(),
             Expression::Infix(_, _, _, span) => span.clone(),
-            Expression::Identifier(span) => span.clone(),
+            Expression::Identifier(_, span) => span.clone(),
         }
     }
 }
@@ -89,6 +83,7 @@ pub enum PrefixOp {
     BoolNegation,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum InfixOp {
     Add,
     Assignment,

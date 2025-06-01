@@ -69,13 +69,8 @@ impl<'a> Parser<'a> {
                     expression,
                 },
             )))
-        } else if self.match_peek_token_kind(TokenKind::RBrace) {
-            Ok(AstNode::Expression(expression))
         } else {
-            Err(Error::Unexpected {
-                expected: ";".to_string(),
-                got: self.lexer.peek().unwrap().span,
-            })
+            Ok(AstNode::Expression(expression))
         }
     }
 
@@ -95,7 +90,10 @@ impl<'a> Parser<'a> {
         //TODO: figure out the span here (now line vs the span of the name)
         Ok(AstNode::Statement(Statement::LetDeclaration(
             LetDeclaration {
-                identifier: Expression::Identifier(identifier_token.span),
+                identifier: Expression::Identifier(
+                    sf.span_text(&identifier_token.span).to_string(),
+                    identifier_token.span,
+                ),
                 expression,
                 span: Span {
                     start: let_token.span.start,
@@ -130,9 +128,12 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_identifier(&mut self) -> Result<Expression, Error> {
-        self.lexer
-            .next()
-            .map_or(Err(Error::Eof), |t| Ok(Expression::Identifier(t.span)))
+        self.lexer.next().map_or(Err(Error::Eof), |t| {
+            Ok(Expression::Identifier(
+                self.source_file.borrow().span_text(&t.span).to_string(),
+                t.span,
+            ))
+        })
     }
 
     fn parse_infix_expression(&mut self, left_expression: Expression) -> Result<Expression, Error> {
@@ -208,10 +209,10 @@ impl<'a> Parser<'a> {
 
 #[cfg(test)]
 mod tests {
-    use std::cell::{Ref, RefCell};
+    use std::cell::RefCell;
 
     use crate::{
-        ast::{AstNode, Expression, NumericLiteral, Statement},
+        ast::{AstNode, Expression, InfixOp, NumericLiteral, Statement},
         lexer::lexer::Lexer,
         source::{SourceFile, Span},
     };
@@ -224,13 +225,15 @@ mod tests {
                 Expression::NumericLiteral(NumericLiteral::Integer(e), _),
                 Expression::NumericLiteral(NumericLiteral::Integer(a), _),
             ) => assert_eq!(e, a),
+            (Expression::Identifier(expected_name, _), Expression::Identifier(actual_name, _)) => {
+                assert_eq!(expected_name, actual_name)
+            }
             _ => unreachable!(),
         }
     }
 
-    fn test_identifier<'a>(expected: &str, actual: &Expression, source: Ref<SourceFile<'a>>) {
-        if let Expression::Identifier(span) = actual {
-            let actual_name = source.span_text(span);
+    fn test_identifier(expected: &str, actual: &Expression) {
+        if let Expression::Identifier(actual_name, _) = actual {
             assert_eq!(expected, actual_name);
         } else {
             unreachable!();
@@ -260,7 +263,7 @@ mod tests {
             assert_eq!(1, program.nodes.len());
             if let AstNode::Statement(Statement::LetDeclaration(ld)) = program.nodes.get(0).unwrap()
             {
-                test_identifier(ident, &ld.identifier, source.borrow());
+                test_identifier(ident, &ld.identifier);
                 test_expression(&expr, &ld.expression);
             } else {
                 unreachable!();
@@ -270,7 +273,7 @@ mod tests {
 
     #[test]
     fn test_happypath_parse_identifier() {
-        let tests = vec![("foo;", "foo"), ("bar;", "bar")];
+        let tests = vec![("foo;", "foo"), ("bar;", "bar"), ("baz", "baz")];
 
         for (code, expected) in tests {
             let source = RefCell::new(SourceFile::new(0, "test".to_string(), code));
@@ -280,8 +283,50 @@ mod tests {
 
             assert_eq!(1, program.nodes.len());
 
-            if let AstNode::Expression(identifier) = program.nodes.get(0).unwrap() {
-                test_identifier(expected, identifier, source.borrow());
+            match program.nodes.get(0).unwrap() {
+                AstNode::Statement(Statement::Expression(es)) => {
+                    test_identifier(expected, &es.expression)
+                }
+                AstNode::Expression(expression) => test_identifier(expected, expression),
+                _ => unreachable!(),
+            }
+        }
+    }
+
+    #[test]
+    fn test_happypath_parse_assignments() {
+        let tests = vec![
+            (
+                "foo = bar;",
+                InfixOp::Assignment,
+                Expression::Identifier("foo".to_string(), Span::default()),
+                Expression::Identifier("bar".to_string(), Span::default()),
+            ),
+            (
+                "foo = 3;",
+                InfixOp::Assignment,
+                Expression::Identifier("foo".to_string(), Span::default()),
+                Expression::NumericLiteral(NumericLiteral::Integer(3), Span::default()),
+            ),
+        ];
+
+        for (code, expected_op, expected_left, expected_right) in tests {
+            let source = RefCell::new(SourceFile::new(0, "test".to_string(), code));
+
+            let mut parser = Parser::new(&source);
+            let program = parser.parse();
+
+            assert_eq!(1, program.nodes.len());
+            let expr = match program.nodes.into_iter().next().unwrap() {
+                AstNode::Statement(Statement::Expression(es)) => es.expression,
+                AstNode::Expression(expression) => expression,
+                _ => unreachable!("Expected an infix expression"),
+            };
+
+            if let Expression::Infix(left, op, right, _) = &expr {
+                test_expression(&expected_left, left);
+                test_expression(&expected_right, right);
+                assert_eq!(*op, expected_op);
             }
         }
     }
