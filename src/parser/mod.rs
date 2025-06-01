@@ -136,6 +136,16 @@ impl<'a> Parser<'a> {
         })
     }
 
+    fn parse_boolean(&mut self) -> Result<Expression, Error> {
+        let boolean_token = self.lexer.next().expect("Never called before peeking");
+
+        if let TokenKind::KWTrue = boolean_token.kind {
+            Ok(Expression::Bool(true, boolean_token.span))
+        } else {
+            Ok(Expression::Bool(false, boolean_token.span))
+        }
+    }
+
     //TODO: test coverage 0%
     fn parse_grouped_expression(&mut self) -> Result<Expression, Error> {
         let l_paren_token = self.lexer.next().expect("Never called before peeking");
@@ -188,6 +198,9 @@ impl<'a> Parser<'a> {
                 TokenKind::Integer => Ok(Box::new(|parser| parser.parse_integer())),
                 TokenKind::Identifier => Ok(Box::new(|parser| parser.parse_identifier())),
                 TokenKind::LParen => Ok(Box::new(|parser| parser.parse_grouped_expression())),
+                TokenKind::KWTrue | TokenKind::KWFalse => {
+                    Ok(Box::new(|parser| parser.parse_boolean()))
+                }
                 TokenKind::Minus | TokenKind::Bang => {
                     Ok(Box::new(|parser| parser.parse_prefix_expression()))
                 }
@@ -258,6 +271,9 @@ mod tests {
             ) => assert_eq!(e, a),
             (Expression::Identifier(expected_name, _), Expression::Identifier(actual_name, _)) => {
                 assert_eq!(expected_name, actual_name)
+            }
+            (Expression::Bool(bool_expected, _), Expression::Bool(bool_actual, _)) => {
+                assert_eq!(bool_expected, bool_actual)
             }
             _ => unreachable!(),
         }
@@ -364,11 +380,23 @@ mod tests {
 
     #[test]
     fn test_happypath_parse_prefix_expressions() {
-        let tests = vec![(
-            "-5;",
-            Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
-            PrefixOp::Negation,
-        )];
+        let tests = vec![
+            (
+                "-5;",
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+                PrefixOp::Negation,
+            ),
+            (
+                "!true;",
+                Expression::Bool(true, Span::default()),
+                PrefixOp::BoolNegation,
+            ),
+            (
+                "!false;",
+                Expression::Bool(false, Span::default()),
+                PrefixOp::BoolNegation,
+            ),
+        ];
 
         for (code, expected_expr, expected_op) in tests {
             let source = RefCell::new(SourceFile::new(0, "test".to_string(), code));
@@ -392,6 +420,33 @@ mod tests {
             } else {
                 unreachable!("Expected a prefix expression");
             }
+        }
+    }
+
+    #[test]
+    fn test_happypath_parse_boolean_expressions() {
+        let tests = vec![
+            ("true;", Expression::Bool(true, Span::default())),
+            ("false;", Expression::Bool(false, Span::default())),
+        ];
+
+        for (code, expected_expr) in tests {
+            let source = RefCell::new(SourceFile::new(0, "test".to_string(), code));
+
+            let mut parser = Parser::new(&source);
+            let program = parser.parse();
+
+            assert_eq!(1, program.nodes.len());
+
+            let es = if let AstNode::Statement(Statement::Expression(es)) =
+                program.nodes.into_iter().next().unwrap()
+            {
+                es.expression
+            } else {
+                unreachable!("Expected expression statemenet");
+            };
+
+            test_expression(&expected_expr, &es);
         }
     }
 }
