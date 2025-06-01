@@ -76,6 +76,16 @@ pub struct Span {
     pub file: FileId,
 }
 
+impl Span {
+    pub fn from_spans(start_span: Span, end_span: Span) -> Self {
+        Span {
+            start: start_span.start,
+            end: end_span.end,
+            file: start_span.file,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{Position, SourceFile};

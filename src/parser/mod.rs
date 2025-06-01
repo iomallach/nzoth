@@ -136,6 +136,20 @@ impl<'a> Parser<'a> {
         })
     }
 
+    //TODO: test coverage 0%
+    fn parse_grouped_expression(&mut self) -> Result<Expression, Error> {
+        let l_paren_token = self.lexer.next().expect("Never called before peeking");
+        let grouped_expression = self.parse_expression(Precedence::Lowest)?;
+        let grouped_expression_span = grouped_expression.span();
+
+        self.expect_and_next(TokenKind::RParen)?;
+
+        Ok(Expression::Grouped(
+            Box::new(grouped_expression),
+            Span::from_spans(l_paren_token.span, grouped_expression_span),
+        ))
+    }
+
     fn parse_infix_expression(&mut self, left_expression: Expression) -> Result<Expression, Error> {
         let current_token = self.lexer.next().expect("Peek checked before calling");
         let right_expression = self.parse_expression(Precedence::from(current_token.kind))?;
@@ -156,6 +170,7 @@ impl<'a> Parser<'a> {
             match token.kind {
                 TokenKind::Integer => Ok(Box::new(|parser| parser.parse_integer())),
                 TokenKind::Identifier => Ok(Box::new(|parser| parser.parse_identifier())),
+                TokenKind::LParen => Ok(Box::new(|parser| parser.parse_grouped_expression())),
                 otherwise => {
                     eprintln!("Unexpected token of kind = {}", otherwise);
                     todo!();
@@ -169,11 +184,7 @@ impl<'a> Parser<'a> {
     fn infix_parse_fn(&mut self) -> Result<InfixParseFn, Error> {
         if let Some(token) = self.lexer.peek() {
             match token.kind {
-                TokenKind::Plus => Ok(Box::new(|parser, left| parser.parse_infix_expression(left))),
-                TokenKind::Minus => {
-                    Ok(Box::new(|parser, left| parser.parse_infix_expression(left)))
-                }
-                TokenKind::Equal => {
+                TokenKind::Asterisk | TokenKind::Plus | TokenKind::Minus | TokenKind::Equal => {
                     Ok(Box::new(|parser, left| parser.parse_infix_expression(left)))
                 }
                 _ => todo!(),

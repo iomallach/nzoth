@@ -44,7 +44,6 @@ pub enum Statement {
 
 pub struct LetDeclaration {
     pub identifier: Expression,
-    // span
     pub expression: Expression,
     pub span: Span,
 }
@@ -60,6 +59,7 @@ pub enum Expression {
     Identifier(String, Span),
     Prefix(PrefixOp, Box<Expression>, Span),
     Infix(Box<Expression>, InfixOp, Box<Expression>, Span),
+    Grouped(Box<Expression>, Span),
 }
 
 impl Expression {
@@ -70,6 +70,7 @@ impl Expression {
             Expression::Prefix(_, _, span) => span.clone(),
             Expression::Infix(_, _, _, span) => span.clone(),
             Expression::Identifier(_, span) => span.clone(),
+            Expression::Grouped(_, span) => span.clone(),
         }
     }
 }
@@ -135,6 +136,7 @@ impl From<TokenKind> for Precedence {
         match value {
             TokenKind::Plus => Self::Add,
             TokenKind::Equal => Self::Equals,
+            TokenKind::LParen => Self::Call,
             _ => Self::Lowest,
         }
     }
