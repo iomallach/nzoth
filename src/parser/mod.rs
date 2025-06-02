@@ -318,7 +318,10 @@ mod tests {
     use std::cell::RefCell;
 
     use crate::{
-        ast::{AstNode, Expression, InfixOp, NumericLiteral, PrefixOp, Statement, Type},
+        ast::{
+            AstNode, Expression, InfixOp, NumericLiteral, PrefixOp, Statement, Type,
+            visitor::ProgramPrinter,
+        },
         lexer::lexer::Lexer,
         source::{SourceFile, Span},
     };
@@ -672,6 +675,55 @@ mod tests {
             } else {
                 panic!("Test failed for {code}: not an infix expression")
             }
+        }
+    }
+
+    #[test]
+    fn test_expression_operator_precedence() {
+        let tests = vec![
+            ("a + b", "(a + b)"),
+            ("-a + b", "((-a) + b)"),
+            ("!-a", "(!(-a))"),
+            ("a + b + c", "((a + b) + c)"),
+            ("a + b - c", "((a + b) - c)"),
+            ("a * b * c", "((a * b) * c)"),
+            ("a * b / c", "((a * b) / c)"),
+            ("a + b / c", "(a + (b / c))"),
+            ("a + b * c + d / e - f", "(((a + (b * c)) + (d / e)) - f)"),
+            ("3 + 4; -5 * 5", "(3 + 4);\n((-5) * 5)"),
+            ("5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"),
+            ("5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))"),
+            ("true", "true"),
+            ("false", "false"),
+            ("3 > 5 == false", "((3 > 5) == false)"),
+            ("3 < 5 == true", "((3 < 5) == true)"),
+            ("(5 + 5) * 2", "((5 + 5) * 2)"),
+            ("1 + (2 + 3) + 4", "((1 + (2 + 3)) + 4)"),
+            ("2 / (5 + 5)", "(2 / (5 + 5))"),
+            ("-(5 + 5)", "(-(5 + 5))"),
+            ("!(true == true)", "(!(true == true))"),
+            // (
+            //     "a * [1, 2, 3, 4][b * c] * d",
+            //     "((a * ([1, 2, 3, 4][(b * c)])) * d)",
+            // ),
+            // (
+            //     "add(a + b + c * d / f + g)",
+            //     "add((((a + b) + ((c * d) / f)) + g))",
+            // ),
+            // (
+            //     "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))",
+            //     "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))",
+            // ),
+            // ("a + add(b * c) + d", "((a + add((b * c))) + d)"),
+        ];
+
+        for (code, expected) in tests {
+            let source = RefCell::new(SourceFile::new(0, "test".to_string(), code));
+
+            let mut parser = Parser::new(&source);
+            let program = parser.parse();
+
+            assert_eq!(expected, ProgramPrinter::print(&program));
         }
     }
 }
