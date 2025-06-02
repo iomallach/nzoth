@@ -1,4 +1,9 @@
-use std::ops::{Deref, DerefMut};
+pub mod visitor;
+
+use std::{
+    fmt::Display,
+    ops::{Deref, DerefMut},
+};
 
 use crate::{source::Span, token::TokenKind};
 
@@ -99,10 +104,27 @@ pub enum Type {
     Integer,
 }
 
+impl Display for Type {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Integer => write!(f, "int"),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum PrefixOp {
     Negation,
     BoolNegation,
+}
+
+impl Display for PrefixOp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Negation => f.write_str("-"),
+            Self::BoolNegation => f.write_str("!"),
+        }
+    }
 }
 
 impl From<&str> for PrefixOp {
@@ -128,6 +150,24 @@ pub enum InfixOp {
     LessThanEquals,
     GreaterThan,
     GreaterThanEquals,
+}
+
+impl Display for InfixOp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            InfixOp::Add => f.write_str("+"),
+            InfixOp::Assignment => f.write_str("="),
+            InfixOp::Subtract => f.write_str("-"),
+            InfixOp::Multiply => f.write_str("*"),
+            InfixOp::Divide => f.write_str("/"),
+            InfixOp::Equals => f.write_str("=="),
+            InfixOp::NotEquals => f.write_str("!="),
+            InfixOp::LessThan => f.write_str("<"),
+            InfixOp::LessThanEquals => f.write_str("<="),
+            InfixOp::GreaterThan => f.write_str(">"),
+            InfixOp::GreaterThanEquals => f.write_str(">="),
+        }
+    }
 }
 
 impl From<&str> for InfixOp {
