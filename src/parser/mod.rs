@@ -259,10 +259,20 @@ impl<'a> Parser<'a> {
     fn infix_parse_fn(&mut self) -> Result<InfixParseFn, Error> {
         if let Some(token) = self.lexer.peek() {
             match token.kind {
-                TokenKind::Asterisk | TokenKind::Plus | TokenKind::Minus | TokenKind::Equal => {
+                TokenKind::Asterisk
+                | TokenKind::Slash
+                | TokenKind::Plus
+                | TokenKind::Minus
+                | TokenKind::Equal
+                | TokenKind::EqualEqual
+                | TokenKind::BangEqual
+                | TokenKind::Less
+                | TokenKind::LessEqual
+                | TokenKind::Greater
+                | TokenKind::GreaterEqual => {
                     Ok(Box::new(|parser, left| parser.parse_infix_expression(left)))
                 }
-                _ => todo!(),
+                otherwise => todo!("Not yet implemented for {otherwise}"),
             }
         } else {
             Err(Error::Eof)
@@ -315,17 +325,26 @@ mod tests {
 
     use super::Parser;
 
-    fn test_expression(expected: &Expression, actual: &Expression) {
+    fn test_expression(expected: &Expression, actual: &Expression, code_context: &str) {
         match (expected, actual) {
             (
                 Expression::NumericLiteral(NumericLiteral::Integer(e), _),
                 Expression::NumericLiteral(NumericLiteral::Integer(a), _),
-            ) => assert_eq!(e, a),
+            ) => assert_eq!(
+                e, a,
+                "Test failed for {code_context}, expected {e}, got {a}"
+            ),
             (Expression::Identifier(expected_name, _), Expression::Identifier(actual_name, _)) => {
-                assert_eq!(expected_name, actual_name)
+                assert_eq!(
+                    expected_name, actual_name,
+                    "Test failed for {code_context}, expected {expected_name}, got {actual_name}"
+                )
             }
             (Expression::Bool(bool_expected, _), Expression::Bool(bool_actual, _)) => {
-                assert_eq!(bool_expected, bool_actual)
+                assert_eq!(
+                    bool_expected, bool_actual,
+                    "Test failed for {code_context}, expected {bool_expected}, got {bool_actual}"
+                )
             }
             _ => unreachable!(),
         }
@@ -372,7 +391,7 @@ mod tests {
             if let AstNode::Statement(Statement::LetDeclaration(ld)) = program.nodes.get(0).unwrap()
             {
                 test_identifier(ident, &ld.identifier);
-                test_expression(&expr, &ld.expression);
+                test_expression(&expr, &ld.expression, s);
                 assert_eq!(ty, ld.ty);
             } else {
                 unreachable!();
@@ -433,8 +452,8 @@ mod tests {
             };
 
             if let Expression::Infix(left, op, right, _) = &expr {
-                test_expression(&expected_left, left);
-                test_expression(&expected_right, right);
+                test_expression(&expected_left, left, code);
+                test_expression(&expected_right, right, code);
                 assert_eq!(*op, expected_op);
             }
         }
@@ -477,7 +496,7 @@ mod tests {
             };
 
             if let Expression::Prefix(op, expr, _) = es {
-                test_expression(&expected_expr, &expr);
+                test_expression(&expected_expr, &expr, code);
                 assert_eq!(expected_op, op);
             } else {
                 unreachable!("Expected a prefix expression");
@@ -508,7 +527,151 @@ mod tests {
                 unreachable!("Expected expression statemenet");
             };
 
-            test_expression(&expected_expr, &es);
+            test_expression(&expected_expr, &es, code);
+        }
+    }
+
+    #[test]
+    fn test_happypath_parse_infix_expressions() {
+        let tests = vec![
+            (
+                "5 + 5;",
+                InfixOp::Add,
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+            ),
+            (
+                "5 - 5;",
+                InfixOp::Subtract,
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+            ),
+            (
+                "5 * 5;",
+                InfixOp::Multiply,
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+            ),
+            (
+                "5 / 5;",
+                InfixOp::Divide,
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+            ),
+            (
+                "5 != 5;",
+                InfixOp::NotEquals,
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+            ),
+            (
+                "5 == 5;",
+                InfixOp::Equals,
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+            ),
+            (
+                "5 > 5;",
+                InfixOp::GreaterThan,
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+            ),
+            (
+                "5 < 5;",
+                InfixOp::LessThan,
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+            ),
+            (
+                "5 >= 5;",
+                InfixOp::GreaterThanEquals,
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+            ),
+            (
+                "5 <= 5;",
+                InfixOp::LessThanEquals,
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
+            ),
+            (
+                "true != false;",
+                InfixOp::NotEquals,
+                Expression::Bool(true, Span::default()),
+                Expression::Bool(false, Span::default()),
+            ),
+            (
+                "false != true;",
+                InfixOp::NotEquals,
+                Expression::Bool(false, Span::default()),
+                Expression::Bool(true, Span::default()),
+            ),
+            (
+                "true != true;",
+                InfixOp::NotEquals,
+                Expression::Bool(true, Span::default()),
+                Expression::Bool(true, Span::default()),
+            ),
+            (
+                "false != false;",
+                InfixOp::NotEquals,
+                Expression::Bool(false, Span::default()),
+                Expression::Bool(false, Span::default()),
+            ),
+            (
+                "true == false;",
+                InfixOp::Equals,
+                Expression::Bool(true, Span::default()),
+                Expression::Bool(false, Span::default()),
+            ),
+            (
+                "false == true;",
+                InfixOp::Equals,
+                Expression::Bool(false, Span::default()),
+                Expression::Bool(true, Span::default()),
+            ),
+            (
+                "false == false;",
+                InfixOp::Equals,
+                Expression::Bool(false, Span::default()),
+                Expression::Bool(false, Span::default()),
+            ),
+            (
+                "true == true;",
+                InfixOp::Equals,
+                Expression::Bool(true, Span::default()),
+                Expression::Bool(true, Span::default()),
+            ),
+        ];
+
+        for (code, expected_op, expected_left, expected_right) in tests {
+            let source = RefCell::new(SourceFile::new(0, "test".to_string(), code));
+
+            let mut parser = Parser::new(&source);
+            let program = parser.parse();
+
+            assert_eq!(
+                1,
+                program.nodes.len(),
+                "Test failed for {code}, expected 1 nodes, found {}",
+                program.nodes.len()
+            );
+
+            let expr = if let AstNode::Statement(Statement::Expression(es)) =
+                program.nodes.into_iter().next().unwrap()
+            {
+                es.expression
+            } else {
+                panic!("Test failed for {code}: not an expression statement")
+            };
+
+            if let Expression::Infix(left, op, right, _) = expr {
+                test_expression(&expected_right, &right, code);
+                test_expression(&expected_left, &left, code);
+                assert_eq!(expected_op, op);
+            } else {
+                panic!("Test failed for {code}: not an infix expression")
+            }
         }
     }
 }

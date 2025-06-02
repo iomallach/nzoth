@@ -26,11 +26,13 @@ impl Program {
     }
 }
 
+#[derive(Debug)]
 pub enum AstNode {
     Statement(Statement),
     Expression(Expression),
 }
 
+#[derive(Debug)]
 pub enum Statement {
     LetDeclaration(LetDeclaration),
     Expression(ExpressionStatement),
@@ -43,6 +45,7 @@ pub enum Statement {
     //import statement here or top level node
 }
 
+#[derive(Debug)]
 pub struct LetDeclaration {
     pub identifier: Expression,
     pub expression: Expression,
@@ -50,17 +53,20 @@ pub struct LetDeclaration {
     pub ty: Option<Type>,
 }
 
+#[derive(Debug)]
 pub struct ExpressionStatement {
     pub span: Span,
     pub expression: Expression,
 }
 
+#[derive(Debug)]
 pub struct Block {
     pub nodes: Vec<AstNode>,
     pub last_expression: Option<Box<AstNode>>,
     pub span: Span,
 }
 
+#[derive(Debug)]
 pub enum Expression {
     NumericLiteral(NumericLiteral, Span),
     Bool(bool, Span),
@@ -83,6 +89,7 @@ impl Expression {
     }
 }
 
+#[derive(Debug)]
 pub enum NumericLiteral {
     Integer(i64),
 }
@@ -158,8 +165,13 @@ pub enum Precedence {
 impl From<TokenKind> for Precedence {
     fn from(value: TokenKind) -> Self {
         match value {
-            TokenKind::Plus => Self::Add,
-            TokenKind::Equal => Self::Equals,
+            TokenKind::Plus | TokenKind::Minus => Self::Add,
+            TokenKind::Asterisk | TokenKind::Slash => Self::Product,
+            TokenKind::Equal | TokenKind::BangEqual | TokenKind::EqualEqual => Self::Equals,
+            TokenKind::GreaterEqual
+            | TokenKind::Greater
+            | TokenKind::Less
+            | TokenKind::LessEqual => Self::Less,
             TokenKind::LParen => Self::Call,
             _ => Self::Lowest,
         }
