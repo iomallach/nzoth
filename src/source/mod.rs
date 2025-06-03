@@ -44,7 +44,9 @@ impl<'a> SourceFile<'a> {
 
     pub fn line_str(&self, line: usize) -> &str {
         let line_start = self.line_offsets[line];
-        let line_end = if line + 1 >= self.line_offsets.len() {
+        let line_end = if self.line_offsets.len() == 1 {
+            self.contents.len() - 1
+        } else if line + 1 >= self.line_offsets.len() {
             self.line_offsets.len()
         } else {
             self.line_offsets[line + 1]
