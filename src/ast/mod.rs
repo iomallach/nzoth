@@ -35,6 +35,7 @@ impl Program {
 pub enum AstNode {
     Statement(Statement),
     Expression(Expression),
+    EndOfProgram,
 }
 
 #[derive(Debug)]

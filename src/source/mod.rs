@@ -62,6 +62,14 @@ impl<'a> SourceFile<'a> {
             file: self.id,
         }
     }
+
+    pub fn end_of_file(&self) -> Span {
+        Span {
+            start: self.position_at_offset(self.contents.len() - 1),
+            end: self.position_at_offset(self.contents.len() - 1),
+            file: self.id,
+        }
+    }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Default)]

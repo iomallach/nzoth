@@ -45,6 +45,7 @@ impl Visitor for ProgramPrinter {
         match node {
             AstNode::Statement(stmt) => self.visit_statement_node(stmt),
             AstNode::Expression(expr) => self.visit_expression_node(expr),
+            AstNode::EndOfProgram => "".to_string(),
         }
     }
 

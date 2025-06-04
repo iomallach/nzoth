@@ -12,6 +12,41 @@ pub struct ParserError<'a> {
     pub source: &'a RefCell<SourceFile<'a>>,
 }
 
+impl<'a> ParserError<'a> {
+    pub fn expected_token(
+        expected: TokenKind,
+        found: TokenKind,
+        span: Span,
+        source: &'a RefCell<SourceFile<'a>>,
+    ) -> Self {
+        Self {
+            error: ParserErrorKind::ExpectedToken { expected, found },
+            span,
+            source,
+        }
+    }
+
+    pub fn unexpected_end_of_file(source: &'a RefCell<SourceFile<'a>>) -> Self {
+        Self {
+            error: ParserErrorKind::UnexpectedEndOfFile,
+            span: source.borrow().end_of_file(),
+            source,
+        }
+    }
+
+    pub fn unknow_operator_in_expression(
+        operator: TokenKind,
+        span: Span,
+        source: &'a RefCell<SourceFile<'a>>,
+    ) -> Self {
+        Self {
+            error: ParserErrorKind::UnknownOperatorInExpression(operator),
+            span,
+            source,
+        }
+    }
+}
+
 impl<'a> std::error::Error for ParserError<'a> {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         Some(&self.error)
@@ -40,6 +75,7 @@ pub enum ParserErrorKind {
         expected: TokenKind,
         found: TokenKind,
     },
+    UnknownOperatorInExpression(TokenKind),
     UnexpectedEndOfFile,
 }
 
@@ -52,6 +88,9 @@ impl std::fmt::Display for ParserErrorKind {
                 write!(f, "Expected {expected}, found {found}")
             }
             Self::UnexpectedEndOfFile => write!(f, "Unexpected end of file"),
+            Self::UnknownOperatorInExpression(tk) => {
+                write!(f, "Unexpected operator `{tk} in expression`")
+            }
         }
     }
 }

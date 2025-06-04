@@ -7,17 +7,10 @@ use crate::ast::{
 };
 use crate::error::CompilationError;
 use crate::error::lexical_error::LexicalError;
+use crate::error::parser_error::ParserError;
 use crate::lexer::lexer::Lexer;
 use crate::source::{SourceFile, Span};
 use crate::token::{Token, TokenKind};
-
-type PrefixParseFn = Box<dyn FnMut(&mut Parser) -> Result<Expression, Error>>;
-type InfixParseFn = Box<dyn FnMut(&mut Parser, Expression) -> Result<Expression, Error>>;
-
-pub enum Error {
-    Eof,
-    Unexpected { expected: String, got: Span },
-}
 
 pub struct Parser<'a> {
     lexer: Peekable<Lexer<'a>>,
@@ -41,36 +34,26 @@ impl<'a> Parser<'a> {
         while self.lexer.peek().is_some() {
             match self.parse_node() {
                 Ok(node) => program.push(node),
-                Err(_) => todo!(),
+                Err(_) => todo!("Handle errors and sync"),
             }
         }
         program
     }
 
-    pub fn parse_node(&mut self) -> Result<AstNode, Error> {
-        match self.peek_token_kind() {
+    pub fn parse_node(&mut self) -> Result<AstNode, CompilationError<'a>> {
+        match self.peek_token_kind()? {
             TokenKind::KWLet => self.parse_let_declaration(),
-            TokenKind::Eof => Err(Error::Eof),
-            TokenKind::Illegal => self.errors.push(CompilationError::LexicalError(
-                LexicalError::unrecognized_token(token.span, self.source_file),
-            )),
+            TokenKind::Eof => Ok(AstNode::EndOfProgram),
             // TODO: skip to either linebreak or semicolon
-            TokenKind::UnbalancedQuote => self.errors.push(CompilationError::LexicalError(
-                LexicalError::unbalanced_quote(token.span, self.source_file),
-            )),
             _ => self.parse_expression_node(),
         }
     }
 
-    pub fn parse_expression_node(&mut self) -> Result<AstNode, Error> {
-        let start_token = self
-            .lexer
-            .peek()
-            .copied()
-            .expect("Never called before peek check");
+    pub fn parse_expression_node(&mut self) -> Result<AstNode, CompilationError<'a>> {
+        let start_token = self.peek_token()?;
         let expression = self.parse_expression(Precedence::Lowest)?;
 
-        if self.match_peek_token_kind(TokenKind::Semicolon) {
+        if self.match_peek_token_kind(TokenKind::Semicolon)? {
             self.lexer.next();
             Ok(AstNode::Statement(Statement::Expression(
                 ExpressionStatement {
@@ -83,13 +66,13 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_let_declaration(&mut self) -> Result<AstNode, Error> {
-        let let_token = self.lexer.next().expect("Never called before peek check");
+    fn parse_let_declaration(&mut self) -> Result<AstNode, CompilationError<'a>> {
+        let let_token = self.next_token()?;
 
         let identifier_token = self.expect_and_next(TokenKind::Identifier)?;
         //TODO: check :: and parse type
 
-        let ty = if self.match_peek_token_kind(TokenKind::ColonColon) {
+        let ty = if self.match_peek_token_kind(TokenKind::ColonColon)? {
             self.lexer.next();
             Some(self.parse_type_annotation()?)
         } else {
@@ -123,14 +106,16 @@ impl<'a> Parser<'a> {
     }
 
     // TODO: 0% test coverage
-    fn parse_block(&mut self) -> Result<AstNode, Error> {
+    fn parse_block(&mut self) -> Result<AstNode, CompilationError<'a>> {
         let mut nodes = vec![];
-        let opening_curly_brace = self.lexer.next().expect("Checked");
+        let opening_curly_brace = self.next_token()?;
         let mut last_expression = None;
 
         // TODO: edge cases: empty statements, no statements
-        while !self.match_peek_token_kind(TokenKind::RBrace)
-            && !self.match_peek_token_kind(TokenKind::Eof)
+        // TODO: these two probably should not short-circuit the execution and be handled
+        // gracefully
+        while !self.match_peek_token_kind(TokenKind::RBrace)?
+            && !self.match_peek_token_kind(TokenKind::Eof)?
         {
             //FIXME: sync parser on error
             let node = self.parse_node()?;
@@ -155,40 +140,43 @@ impl<'a> Parser<'a> {
         })))
     }
 
-    fn parse_expression(&mut self, precedence: Precedence) -> Result<Expression, Error> {
-        let mut left_expression = self.prefix_parse_fn()?(self)?;
+    fn parse_expression(
+        &mut self,
+        precedence: Precedence,
+    ) -> Result<Expression, CompilationError<'a>> {
+        let mut left_expression = self.apply_prefix_parse_fn()?;
 
-        while !self.match_peek_token_kind(TokenKind::Semicolon)
-            && precedence < self.peek_precedence()
+        while !self.match_peek_token_kind(TokenKind::Semicolon)?
+            && precedence < self.peek_precedence()?
         {
-            left_expression = self.infix_parse_fn()?(self, left_expression)?;
+            left_expression = self.apply_infix_parse_fn(left_expression)?;
         }
 
         Ok(left_expression)
     }
 
-    fn parse_integer(&mut self) -> Result<Expression, Error> {
-        let int_token = self.lexer.next().ok_or(Error::Eof)?;
-        let sf = self.source_file.borrow();
-        let int_literal = sf.span_text(&int_token.span);
-
-        Ok(Expression::NumericLiteral(
-            NumericLiteral::Integer(int_literal.parse().expect("Lexer failed")),
-            int_token.span,
-        ))
-    }
-
-    fn parse_identifier(&mut self) -> Result<Expression, Error> {
-        self.lexer.next().map_or(Err(Error::Eof), |t| {
-            Ok(Expression::Identifier(
-                self.source_file.borrow().span_text(&t.span).to_string(),
+    fn parse_integer(&mut self) -> Result<Expression, CompilationError<'a>> {
+        self.next_token().map(|t| {
+            let sf = self.source_file.borrow();
+            let int_literal = sf.span_text(&t.span);
+            Expression::NumericLiteral(
+                NumericLiteral::Integer(int_literal.parse().expect("Lexer failed")),
                 t.span,
-            ))
+            )
         })
     }
 
-    fn parse_boolean(&mut self) -> Result<Expression, Error> {
-        let boolean_token = self.lexer.next().expect("Never called before peeking");
+    fn parse_identifier(&mut self) -> Result<Expression, CompilationError<'a>> {
+        self.next_token().map(|t| {
+            Expression::Identifier(
+                self.source_file.borrow().span_text(&t.span).to_string(),
+                t.span,
+            )
+        })
+    }
+
+    fn parse_boolean(&mut self) -> Result<Expression, CompilationError<'a>> {
+        let boolean_token = self.next_token()?;
 
         if let TokenKind::KWTrue = boolean_token.kind {
             Ok(Expression::Bool(true, boolean_token.span))
@@ -198,8 +186,8 @@ impl<'a> Parser<'a> {
     }
 
     //TODO: test coverage 0%
-    fn parse_grouped_expression(&mut self) -> Result<Expression, Error> {
-        let l_paren_token = self.lexer.next().expect("Never called before peeking");
+    fn parse_grouped_expression(&mut self) -> Result<Expression, CompilationError<'a>> {
+        let l_paren_token = self.next_token()?;
         let grouped_expression = self.parse_expression(Precedence::Lowest)?;
         let grouped_expression_span = grouped_expression.span();
 
@@ -211,8 +199,11 @@ impl<'a> Parser<'a> {
         ))
     }
 
-    fn parse_infix_expression(&mut self, left_expression: Expression) -> Result<Expression, Error> {
-        let current_token = self.lexer.next().expect("Peek checked before calling");
+    fn parse_infix_expression(
+        &mut self,
+        left_expression: Expression,
+    ) -> Result<Expression, CompilationError<'a>> {
+        let current_token = self.next_token()?;
         let right_expression = self.parse_expression(Precedence::from(current_token.kind))?;
         let left_span = left_expression.span();
         let sf = self.source_file.borrow();
@@ -226,8 +217,8 @@ impl<'a> Parser<'a> {
         ))
     }
 
-    fn parse_prefix_expression(&mut self) -> Result<Expression, Error> {
-        let prefix_operator_token = self.lexer.next().expect("Always checked");
+    fn parse_prefix_expression(&mut self) -> Result<Expression, CompilationError<'a>> {
+        let prefix_operator_token = self.next_token()?;
         let prefix_op = PrefixOp::from(
             self.source_file
                 .borrow()
@@ -243,53 +234,53 @@ impl<'a> Parser<'a> {
         ))
     }
 
-    fn prefix_parse_fn(&mut self) -> Result<PrefixParseFn, Error> {
-        if let Some(token) = self.lexer.peek() {
-            match token.kind {
-                TokenKind::Integer => Ok(Box::new(|parser| parser.parse_integer())),
-                TokenKind::Identifier => Ok(Box::new(|parser| parser.parse_identifier())),
-                TokenKind::LParen => Ok(Box::new(|parser| parser.parse_grouped_expression())),
-                TokenKind::KWTrue | TokenKind::KWFalse => {
-                    Ok(Box::new(|parser| parser.parse_boolean()))
-                }
-                TokenKind::Minus | TokenKind::Bang => {
-                    Ok(Box::new(|parser| parser.parse_prefix_expression()))
-                }
-                otherwise => {
-                    eprintln!("Unexpected token of kind = {}", otherwise);
-                    todo!();
-                }
-            }
-        } else {
-            Err(Error::Eof)
+    fn apply_prefix_parse_fn(&mut self) -> Result<Expression, CompilationError<'a>> {
+        let next_token = self.peek_token()?;
+        match next_token.kind {
+            TokenKind::Integer => self.parse_integer(),
+            TokenKind::Identifier => self.parse_identifier(),
+            TokenKind::LParen => self.parse_grouped_expression(),
+            TokenKind::KWTrue | TokenKind::KWFalse => self.parse_boolean(),
+            TokenKind::Minus | TokenKind::Bang => self.parse_prefix_expression(),
+            otherwise => Err(CompilationError::ParserError(
+                ParserError::unknow_operator_in_expression(
+                    otherwise,
+                    next_token.span,
+                    self.source_file,
+                ),
+            )),
         }
     }
 
-    fn infix_parse_fn(&mut self) -> Result<InfixParseFn, Error> {
-        if let Some(token) = self.lexer.peek() {
-            match token.kind {
-                TokenKind::Asterisk
-                | TokenKind::Slash
-                | TokenKind::Plus
-                | TokenKind::Minus
-                | TokenKind::Equal
-                | TokenKind::EqualEqual
-                | TokenKind::BangEqual
-                | TokenKind::Less
-                | TokenKind::LessEqual
-                | TokenKind::Greater
-                | TokenKind::GreaterEqual => {
-                    Ok(Box::new(|parser, left| parser.parse_infix_expression(left)))
-                }
-                otherwise => todo!("Not yet implemented for {otherwise}"),
-            }
-        } else {
-            Err(Error::Eof)
+    fn apply_infix_parse_fn(
+        &mut self,
+        left: Expression,
+    ) -> Result<Expression, CompilationError<'a>> {
+        let next_token = self.peek_token()?;
+        match next_token.kind {
+            TokenKind::Asterisk
+            | TokenKind::Slash
+            | TokenKind::Plus
+            | TokenKind::Minus
+            | TokenKind::Equal
+            | TokenKind::EqualEqual
+            | TokenKind::BangEqual
+            | TokenKind::Less
+            | TokenKind::LessEqual
+            | TokenKind::Greater
+            | TokenKind::GreaterEqual => self.parse_infix_expression(left),
+            otherwise => Err(CompilationError::ParserError(
+                ParserError::unknow_operator_in_expression(
+                    otherwise,
+                    next_token.span,
+                    self.source_file,
+                ),
+            )),
         }
     }
 
-    fn parse_type_annotation(&mut self) -> Result<Type, Error> {
-        match self.peek_token_kind() {
+    fn parse_type_annotation(&mut self) -> Result<Type, CompilationError<'a>> {
+        match self.peek_token_kind()? {
             TokenKind::KWInt => {
                 self.lexer.next();
                 Ok(Type::Integer)
@@ -298,27 +289,59 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn peek_token_kind(&mut self) -> TokenKind {
-        self.lexer.peek().map_or(TokenKind::Eof, |t| t.kind)
+    fn peek_token_kind(&mut self) -> Result<TokenKind, CompilationError<'a>> {
+        self.peek_token().map(|t| t.kind)
     }
 
-    fn match_peek_token_kind(&mut self, kind: TokenKind) -> bool {
-        self.peek_token_kind() == kind
+    fn peek_token(&mut self) -> Result<Token, CompilationError<'a>> {
+        let next_token = self.lexer.peek();
+
+        //TODO: maybe something like TokenStream should handle these?
+        match next_token {
+            None => Ok(Token {
+                kind: TokenKind::Eof,
+                span: self.source_file.borrow().end_of_file(),
+            }),
+            Some(token) => match token.kind {
+                TokenKind::Illegal => Err(CompilationError::LexicalError(
+                    LexicalError::unrecognized_token(token.span, self.source_file),
+                )),
+                TokenKind::UnbalancedQuote => Err(CompilationError::LexicalError(
+                    LexicalError::unbalanced_quote(token.span, self.source_file),
+                )),
+                _ => Ok(next_token.expect("Should never fail").clone()),
+            },
+        }
     }
 
-    fn peek_precedence(&mut self) -> Precedence {
-        Precedence::from(self.peek_token_kind())
+    fn match_peek_token_kind(&mut self, kind: TokenKind) -> Result<bool, CompilationError<'a>> {
+        Ok(self.peek_token_kind()? == kind)
     }
 
-    fn expect_and_next(&mut self, typ: TokenKind) -> Result<Token, Error> {
-        let next_token = self.lexer.peek().ok_or(Error::Eof).copied()?;
-        if next_token.kind == typ {
-            Ok(self.lexer.next().unwrap())
-        } else {
-            Err(Error::Unexpected {
-                expected: typ.to_string(),
-                got: next_token.span,
-            })
+    fn peek_precedence(&mut self) -> Result<Precedence, CompilationError<'a>> {
+        Ok(Precedence::from(self.peek_token_kind()?))
+    }
+
+    fn next_token(&mut self) -> Result<Token, CompilationError<'a>> {
+        //TODO: not ideal, consider implementing a self.check_token to skip peeking
+        self.peek_token()?;
+        Ok(self.lexer.next().expect("Should never fail"))
+    }
+
+    fn expect_and_next(&mut self, typ: TokenKind) -> Result<Token, CompilationError<'a>> {
+        let next_token = self.peek_token()?;
+
+        match next_token.kind {
+            TokenKind::Eof => Err(CompilationError::ParserError(
+                ParserError::unexpected_end_of_file(self.source_file),
+            )),
+            tk if tk == typ => Ok(self.lexer.next().expect("Should never fail")),
+            tk => Err(CompilationError::ParserError(ParserError::expected_token(
+                typ,
+                tk,
+                next_token.span,
+                self.source_file,
+            ))),
         }
     }
 }
