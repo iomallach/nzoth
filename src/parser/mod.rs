@@ -5,6 +5,8 @@ use crate::ast::{
     AstNode, Block, Expression, ExpressionStatement, InfixOp, LetDeclaration, NumericLiteral,
     Precedence, PrefixOp, Program, Statement, Type,
 };
+use crate::error::CompilationError;
+use crate::error::lexical_error::LexicalError;
 use crate::lexer::lexer::Lexer;
 use crate::source::{SourceFile, Span};
 use crate::token::{Token, TokenKind};
@@ -20,7 +22,7 @@ pub enum Error {
 pub struct Parser<'a> {
     lexer: Peekable<Lexer<'a>>,
     source_file: &'a RefCell<SourceFile<'a>>,
-    diagnostics: Vec<String>,
+    errors: Vec<CompilationError<'a>>,
 }
 
 impl<'a> Parser<'a> {
@@ -29,7 +31,7 @@ impl<'a> Parser<'a> {
         Self {
             lexer,
             source_file: source,
-            diagnostics: vec![],
+            errors: vec![],
         }
     }
 
@@ -49,6 +51,13 @@ impl<'a> Parser<'a> {
         match self.peek_token_kind() {
             TokenKind::KWLet => self.parse_let_declaration(),
             TokenKind::Eof => Err(Error::Eof),
+            TokenKind::Illegal => self.errors.push(CompilationError::LexicalError(
+                LexicalError::unrecognized_token(token.span, self.source_file),
+            )),
+            // TODO: skip to either linebreak or semicolon
+            TokenKind::UnbalancedQuote => self.errors.push(CompilationError::LexicalError(
+                LexicalError::unbalanced_quote(token.span, self.source_file),
+            )),
             _ => self.parse_expression_node(),
         }
     }
@@ -292,6 +301,7 @@ impl<'a> Parser<'a> {
     fn peek_token_kind(&mut self) -> TokenKind {
         self.lexer.peek().map_or(TokenKind::Eof, |t| t.kind)
     }
+
     fn match_peek_token_kind(&mut self, kind: TokenKind) -> bool {
         self.peek_token_kind() == kind
     }
