@@ -42,7 +42,7 @@ impl Display for TokenKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             TokenKind::Comma => write!(f, ","),
-            TokenKind::SingleLineComment => write!(f, "//"),
+            TokenKind::SingleLineComment => write!(f, "single line comment"),
             TokenKind::Plus => write!(f, "+"),
             TokenKind::PlusPlus => write!(f, "++"),
             TokenKind::Minus => write!(f, "-"),

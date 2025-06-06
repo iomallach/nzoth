@@ -185,7 +185,10 @@ impl<'a> Iterator for Lexer<'a> {
                 }
                 '"' => {
                     //TODO: could be potentially replaced with .by_ref().take_while().last()
-                    while let Some((j, _)) = self.source.next_if(|(_, c)| *c != '"') {
+                    while let Some((j, _)) = self
+                        .source
+                        .next_if(|(_, c)| *c != '"' && *c != ';' && *c != '\n')
+                    {
                         self.last_pos = j;
                     }
                     //we're either looking at a " or reached the end of file
@@ -209,6 +212,7 @@ impl<'a> Iterator for Lexer<'a> {
                         self.last_pos = j;
                     }
                     // handle cases like 134ab, which is illegal
+                    //FIXME: review individual token snapshot: clearly wrong on 124ab
                     if self.source.peek().is_some_and(|(_, c)| c.is_alphabetic()) {
                         //TODO: ^ is wrong, we should rather look for an alphabetic and mark it
                         //illegal. Also consume until not alphanumeric

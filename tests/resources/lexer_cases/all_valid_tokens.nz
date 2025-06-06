@@ -1,0 +1,34 @@
+,
+/
+//comment //comment
++
+-
+*
+>
+>=
+<
+<=
+=
+==
+!
+!=
+;
+::
+:
+(
+)
+{
+}
+"string lit"
+"unbalanced
+1234
+124ab
+12!
+12
+++
+--
+foobar
+let
+true
+false
+int

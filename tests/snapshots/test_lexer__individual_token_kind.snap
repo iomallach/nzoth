@@ -1,0 +1,43 @@
+---
+source: tests/test_lexer.rs
+expression: "PrintableTokens(tokens.into_iter().map(|t|\nPrintableToken::new(t, &source)).collect::<Vec<_>>())"
+input_file: tests/resources/lexer_cases/all_valid_tokens.nz
+---
+[
+  Token(kind: ",", literal: ","),
+  Token(kind: "/", literal: "/"),
+  Token(kind: "single line comment", literal: "//comment //comment"),
+  Token(kind: "+", literal: "+"),
+  Token(kind: "-", literal: "-"),
+  Token(kind: "*", literal: "*"),
+  Token(kind: ">", literal: ">"),
+  Token(kind: ">=", literal: ">="),
+  Token(kind: "<", literal: "<"),
+  Token(kind: "<=", literal: "<="),
+  Token(kind: "=", literal: "="),
+  Token(kind: "==", literal: "=="),
+  Token(kind: "!", literal: "!"),
+  Token(kind: "!=", literal: "!="),
+  Token(kind: ";", literal: ";"),
+  Token(kind: "::", literal: "::"),
+  Token(kind: "illegal token", literal: ":"),
+  Token(kind: "(", literal: "("),
+  Token(kind: ")", literal: ")"),
+  Token(kind: "{", literal: "{"),
+  Token(kind: "}", literal: "}"),
+  Token(kind: "string literal", literal: ""string lit""),
+  Token(kind: "unbalanced quote", literal: ""unbalanced"),
+  Token(kind: "integer", literal: "1234"),
+  Token(kind: "illegal token", literal: "124a"),
+  Token(kind: "identifier", literal: "ab"),
+  Token(kind: "integer", literal: "12"),
+  Token(kind: "!", literal: "!"),
+  Token(kind: "integer", literal: "12"),
+  Token(kind: "++", literal: "++"),
+  Token(kind: "--", literal: "--"),
+  Token(kind: "identifier", literal: "foobar"),
+  Token(kind: "let", literal: "let"),
+  Token(kind: "true", literal: "true"),
+  Token(kind: "false", literal: "false"),
+  Token(kind: "int", literal: "int"),
+]
