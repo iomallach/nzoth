@@ -123,4 +123,12 @@ impl<'a> Visitor for SnapshotVisitor<'a> {
     fn visit_grouped_expression(&mut self, expr: &nzoth::ast::Expression) -> Self::Output {
         todo!()
     }
+
+    fn visit_func_declaration(&mut self, func_decl: &nzoth::ast::FuncDeclaration) -> Self::Output {
+        todo!()
+    }
+
+    fn visit_func_parameter(&mut self, param: &nzoth::ast::FuncParameter) -> Self::Output {
+        todo!()
+    }
 }

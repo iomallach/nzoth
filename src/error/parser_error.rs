@@ -45,6 +45,19 @@ impl<'a> ParserError<'a> {
             source,
         }
     }
+
+    pub fn unknown_symbol_in_let_declaration(
+        span: Span,
+        source: &'a RefCell<SourceFile<'a>>,
+    ) -> Self {
+        Self {
+            error: ParserErrorKind::UnknownSymbolInLetDeclaration(
+                source.borrow().span_text(&span).to_string(),
+            ),
+            span,
+            source,
+        }
+    }
 }
 
 impl<'a> std::error::Error for ParserError<'a> {
@@ -77,6 +90,7 @@ pub enum ParserErrorKind {
     },
     UnknownOperatorInExpression(TokenKind),
     UnexpectedEndOfFile,
+    UnknownSymbolInLetDeclaration(String),
 }
 
 impl std::error::Error for ParserErrorKind {}
@@ -90,6 +104,9 @@ impl std::fmt::Display for ParserErrorKind {
             Self::UnexpectedEndOfFile => write!(f, "Unexpected end of file"),
             Self::UnknownOperatorInExpression(tk) => {
                 write!(f, "Unexpected operator `{tk} in expression`")
+            }
+            Self::UnknownSymbolInLetDeclaration(s) => {
+                write!(f, "Unknown symbol `{s}` in let declaration")
             }
         }
     }

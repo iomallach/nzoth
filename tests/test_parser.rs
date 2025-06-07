@@ -93,3 +93,29 @@ fn test_invalid_assignments() {
         insta::assert_snapshot!(SnapshotErrors(parser.errors()));
     })
 }
+
+#[test]
+fn test_valid_func_declarations() {
+    insta::glob!(
+        "resources/parser_cases/valid_func_declarations.nz",
+        |path| {
+            let contents = std::fs::read_to_string(path).expect("Expect path exists");
+            let source = RefCell::new(SourceFile::new(
+                0,
+                path.file_name()
+                    .expect("Expect a file")
+                    .to_str()
+                    .expect("No fail")
+                    .to_string(),
+                contents.as_str(),
+            ));
+
+            let mut parser = Parser::new(&source);
+            let program = parser.parse();
+            assert_eq!(parser.errors().len(), 0);
+
+            let output = format!("{:#?}", program);
+            insta::assert_snapshot!(output);
+        }
+    )
+}

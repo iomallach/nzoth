@@ -44,11 +44,12 @@ pub enum Statement {
     LetDeclaration(LetDeclaration),
     Expression(ExpressionStatement),
     Block(Block),
+    FuncDeclaration(FuncDeclaration),
     //function declaration
     //if statement
     //while loop statement
     //for loop statement
-    //assignment
+    //assignment??? now is an expression
     //import statement here or top level node
 }
 
@@ -70,6 +71,22 @@ pub struct ExpressionStatement {
 pub struct Block {
     pub nodes: Vec<AstNode>,
     pub last_expression: Option<Box<AstNode>>,
+    pub span: Span,
+}
+
+#[derive(Debug)]
+pub struct FuncDeclaration {
+    pub identifier: Expression,
+    pub paramemetrs: Vec<FuncParameter>,
+    pub body: Block,
+    pub return_type: Option<Type>,
+    pub span: Span,
+}
+
+#[derive(Debug)]
+pub struct FuncParameter {
+    pub identifier: Expression,
+    pub ty: Type,
     pub span: Span,
 }
 

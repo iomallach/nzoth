@@ -1,0 +1,3 @@
+let fn foo(bar :: int, baz :: float) :: float {
+  bar + baz
+}

@@ -1,6 +1,8 @@
+use crate::ast::Type;
+
 use super::{
-    AstNode, Block, Expression, ExpressionStatement, InfixOp, LetDeclaration, NumericLiteral,
-    PrefixOp, Program, Statement,
+    AstNode, Block, Expression, ExpressionStatement, FuncDeclaration, FuncParameter, InfixOp,
+    LetDeclaration, NumericLiteral, PrefixOp, Program, Statement,
 };
 
 pub trait Visitor {
@@ -10,6 +12,8 @@ pub trait Visitor {
     fn visit_ast_node(&mut self, node: &AstNode) -> Self::Output;
     fn visit_statement_node(&mut self, stmt: &Statement) -> Self::Output;
     fn visit_let_declaration(&mut self, let_decl: &LetDeclaration) -> Self::Output;
+    fn visit_func_declaration(&mut self, func_decl: &FuncDeclaration) -> Self::Output;
+    fn visit_func_parameter(&mut self, param: &FuncParameter) -> Self::Output;
     fn visit_expression_statement(&mut self, expr_stmt: &ExpressionStatement) -> Self::Output;
     fn visit_block(&mut self, block: &Block) -> Self::Output;
     fn visit_expression_node(&mut self, expr: &Expression) -> Self::Output;
@@ -54,6 +58,7 @@ impl Visitor for UnparsePrinter {
             Statement::LetDeclaration(let_decl) => self.visit_let_declaration(let_decl),
             Statement::Block(block) => self.visit_block(block),
             Statement::Expression(expr_stmt) => self.visit_expression_statement(expr_stmt),
+            Statement::FuncDeclaration(fd) => self.visit_func_declaration(fd),
         }
     }
 
@@ -67,6 +72,36 @@ impl Visitor for UnparsePrinter {
         out.push_str(format!(" = {};", self.visit_expression_node(&let_decl.expression)).as_str());
 
         out
+    }
+
+    fn visit_func_declaration(&mut self, func_decl: &FuncDeclaration) -> Self::Output {
+        let mut out = String::new();
+        out.push_str(
+            format!(
+                "let fn{}",
+                self.visit_expression_node(&func_decl.identifier)
+            )
+            .as_str(),
+        );
+        out.push_str("(");
+        for param in &func_decl.paramemetrs {
+            out.push_str(format!("{},", self.visit_func_parameter(param)).as_str());
+        }
+        out.push_str(format!(") {}", self.visit_block(&func_decl.body)).as_str());
+        out
+    }
+
+    fn visit_func_parameter(&mut self, param: &FuncParameter) -> Self::Output {
+        format!(
+            "{} :: {}",
+            self.visit_expression_node(&param.identifier),
+            //TODO: visit type
+            if let Type::Name(n) = &param.ty {
+                n
+            } else {
+                panic!("TODO")
+            }
+        )
     }
 
     fn visit_expression_statement(&mut self, expr_stmt: &ExpressionStatement) -> Self::Output {

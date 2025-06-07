@@ -2,8 +2,8 @@ use std::cell::RefCell;
 use std::iter::Peekable;
 
 use crate::ast::{
-    AstNode, Block, Expression, ExpressionStatement, InfixOp, LetDeclaration, NumericLiteral,
-    Precedence, PrefixOp, Program, Statement, Type,
+    AstNode, Block, Expression, ExpressionStatement, FuncDeclaration, FuncParameter, InfixOp,
+    LetDeclaration, NumericLiteral, Precedence, PrefixOp, Program, Statement, Type,
 };
 use crate::error::CompilationError;
 use crate::error::lexical_error::LexicalError;
@@ -92,9 +92,84 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_let_declaration(&mut self) -> Result<AstNode, CompilationError<'a>> {
-        let let_token = self.next_token()?;
+    fn parse_let_func_declaration(
+        &mut self,
+        let_token: Token,
+    ) -> Result<FuncDeclaration, CompilationError<'a>> {
+        self.expect_and_next(TokenKind::KWFn)?;
+        let identifier_token = self.expect_and_next(TokenKind::Identifier)?;
+        let func_parameters = self.parse_func_parameter_list()?;
+        let return_ty = if self.match_peek_token_kind(TokenKind::ColonColon)? {
+            self.lexer.next();
+            Some(self.parse_type_annotation()?)
+        } else {
+            None
+        };
+        let block = self.parse_block()?;
 
+        Ok(FuncDeclaration {
+            identifier: Expression::Identifier(
+                self.source_file
+                    .borrow()
+                    .span_text(&identifier_token.span)
+                    .to_string(),
+                identifier_token.span,
+            ),
+            paramemetrs: func_parameters,
+            body: block,
+            return_type: return_ty,
+            span: let_token.span,
+        })
+    }
+
+    fn parse_func_parameter_list(&mut self) -> Result<Vec<FuncParameter>, CompilationError<'a>> {
+        let mut func_params = vec![];
+        self.expect_and_next(TokenKind::LParen)?;
+
+        if self.match_peek_token_kind(TokenKind::RParen)? {
+            self.lexer.next();
+            return Ok(func_params);
+        }
+
+        loop {
+            //TODO: might want to record the error right here and sync the parser until ")"
+            let param_identifier_token = self.expect_and_next(TokenKind::Identifier)?;
+            //TODO: sync the parser until ","
+            self.expect_and_next(TokenKind::ColonColon)?;
+
+            let param_type_token = self.expect_and_next(TokenKind::Identifier)?;
+            func_params.push(FuncParameter {
+                identifier: Expression::Identifier(
+                    self.source_file
+                        .borrow()
+                        .span_text(&param_identifier_token.span)
+                        .to_string(),
+                    param_identifier_token.span,
+                ),
+                ty: Type::Name(
+                    self.source_file
+                        .borrow()
+                        .span_text(&param_type_token.span)
+                        .to_string(),
+                ),
+                span: param_identifier_token.span,
+            });
+
+            if !self.match_peek_token_kind(TokenKind::Comma)? {
+                break;
+            }
+            self.lexer.next();
+        }
+
+        self.expect_and_next(TokenKind::RParen)?;
+
+        Ok(func_params)
+    }
+
+    fn parse_let_var_declaration(
+        &mut self,
+        let_token: Token,
+    ) -> Result<LetDeclaration, CompilationError<'a>> {
         let identifier_token = self.expect_and_next(TokenKind::Identifier)?;
         //TODO: check :: and parse type
 
@@ -113,28 +188,44 @@ impl<'a> Parser<'a> {
         self.expect_and_next(TokenKind::Semicolon)?;
 
         let sf = self.source_file.borrow();
+
         //TODO: figure out the span here (now line vs the span of the name)
-        Ok(AstNode::Statement(Statement::LetDeclaration(
-            LetDeclaration {
-                identifier: Expression::Identifier(
-                    sf.span_text(&identifier_token.span).to_string(),
-                    identifier_token.span,
-                ),
-                expression,
-                span: Span {
-                    start: let_token.span.start,
-                    end: expression_span.end,
-                    file: sf.id,
-                },
-                ty,
+        Ok(LetDeclaration {
+            identifier: Expression::Identifier(
+                sf.span_text(&identifier_token.span).to_string(),
+                identifier_token.span,
+            ),
+            expression,
+            span: Span {
+                start: let_token.span.start,
+                end: expression_span.end,
+                file: sf.id,
             },
-        )))
+            ty,
+        })
+    }
+
+    fn parse_let_declaration(&mut self) -> Result<AstNode, CompilationError<'a>> {
+        let let_token = self.next_token()?;
+
+        let next_token = self.peek_token()?;
+        match next_token.kind {
+            TokenKind::Identifier => Ok(AstNode::Statement(Statement::LetDeclaration(
+                self.parse_let_var_declaration(let_token)?,
+            ))),
+            TokenKind::KWFn => Ok(AstNode::Statement(Statement::FuncDeclaration(
+                self.parse_let_func_declaration(let_token)?,
+            ))),
+            _ => Err(CompilationError::ParserError(
+                ParserError::unknown_symbol_in_let_declaration(next_token.span, &self.source_file),
+            )),
+        }
     }
 
     // TODO: 0% test coverage
-    fn parse_block(&mut self) -> Result<AstNode, CompilationError<'a>> {
+    fn parse_block(&mut self) -> Result<Block, CompilationError<'a>> {
         let mut nodes = vec![];
-        let opening_curly_brace = self.next_token()?;
+        let opening_curly_brace = self.expect_and_next(TokenKind::LBrace)?;
         let mut last_expression = None;
 
         // TODO: edge cases: empty statements, no statements
@@ -157,13 +248,13 @@ impl<'a> Parser<'a> {
             }
         }
 
-        let closing_curly = self.expect_and_next(TokenKind::Semicolon)?;
+        let closing_curly = self.expect_and_next(TokenKind::RBrace)?;
 
-        Ok(AstNode::Statement(Statement::Block(Block {
+        Ok(Block {
             nodes,
             last_expression: last_expression.map(|le| Box::new(le)),
             span: Span::from_spans(opening_curly_brace.span, closing_curly.span),
-        })))
+        })
     }
 
     fn parse_expression(
