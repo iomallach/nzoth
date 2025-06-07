@@ -1,19 +1,35 @@
 use std::cell::RefCell;
 
-use nzoth::{ast::Program, ast::visitor::Visitor, source::SourceFile, token::Token};
+use nzoth::{
+    ast::{Program, visitor::Visitor},
+    error::CompilationError,
+    source::SourceFile,
+    token::Token,
+};
 
-pub struct PrintableToken<'a> {
+pub struct SnapshotErrors<'a>(pub &'a Vec<CompilationError<'a>>);
+
+impl<'a> std::fmt::Display for SnapshotErrors<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for error in self.0 {
+            write!(f, "{error}\n")?;
+        }
+        Ok(())
+    }
+}
+
+pub struct SnapshotToken<'a> {
     token: Token,
     source: &'a RefCell<SourceFile<'a>>,
 }
 
-impl<'a> PrintableToken<'a> {
+impl<'a> SnapshotToken<'a> {
     pub fn new(token: Token, source: &'a RefCell<SourceFile<'a>>) -> Self {
         Self { token, source }
     }
 }
 
-impl<'a> std::fmt::Display for PrintableToken<'a> {
+impl<'a> std::fmt::Display for SnapshotToken<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -24,9 +40,9 @@ impl<'a> std::fmt::Display for PrintableToken<'a> {
     }
 }
 
-pub struct PrintableTokens<'a>(pub Vec<PrintableToken<'a>>);
+pub struct SnapshotTokens<'a>(pub Vec<SnapshotToken<'a>>);
 
-impl<'a> std::fmt::Display for PrintableTokens<'a> {
+impl<'a> std::fmt::Display for SnapshotTokens<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut iter = self.0.iter();
         f.write_str("[\n")?;

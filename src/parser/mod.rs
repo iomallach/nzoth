@@ -7,7 +7,7 @@ use crate::ast::{
 };
 use crate::error::CompilationError;
 use crate::error::lexical_error::LexicalError;
-use crate::error::parser_error::ParserError;
+use crate::error::parser_error::{ParserError, ParserErrorKind};
 use crate::lexer::lexer::Lexer;
 use crate::source::{SourceFile, Span};
 use crate::token::{Token, TokenKind};
@@ -28,18 +28,44 @@ impl<'a> Parser<'a> {
         }
     }
 
+    pub fn errors(&self) -> &Vec<CompilationError<'a>> {
+        &self.errors
+    }
+
     pub fn parse(&mut self) -> Program {
         let mut program = Program { nodes: vec![] };
 
         while self.lexer.peek().is_some() {
             match self.parse_node() {
                 Ok(node) => program.push(node),
-                Err(_) => todo!("Handle errors and sync"),
+                Err(comp_error) => {
+                    self.errors.push(comp_error);
+                    self.synchronize_parser();
+                }
             }
         }
         program
     }
 
+    fn synchronize_parser(&mut self) {
+        loop {
+            eprintln!("Loop cycle");
+            match self.peek_token_kind() {
+                Ok(kind) if matches!(kind, TokenKind::Eof | TokenKind::Semicolon) => {
+                    self.lexer.next();
+                    return;
+                }
+                _ => {
+                    if let Err(e) = self.next_token() {
+                        self.errors.push(e);
+                    }
+                }
+            }
+        }
+    }
+
+    //TODO: top level parsing. Should this only be allowed to parse declarations
+    //and imports?
     pub fn parse_node(&mut self) -> Result<AstNode, CompilationError<'a>> {
         match self.peek_token_kind()? {
             TokenKind::KWLet => self.parse_let_declaration(),

@@ -1,7 +1,7 @@
 mod helpers;
 use std::cell::RefCell;
 
-use helpers::{PrintableToken, PrintableTokens};
+use helpers::{SnapshotToken, SnapshotTokens};
 use insta;
 use nzoth::{lexer::Lexer, source::SourceFile};
 
@@ -25,10 +25,10 @@ fn test_individual_token_kind() {
             tokens.push(token);
         }
 
-        insta::assert_snapshot!(PrintableTokens(
+        insta::assert_snapshot!(SnapshotTokens(
             tokens
                 .into_iter()
-                .map(|t| PrintableToken::new(t, &source))
+                .map(|t| SnapshotToken::new(t, &source))
                 .collect::<Vec<_>>()
         ));
     })

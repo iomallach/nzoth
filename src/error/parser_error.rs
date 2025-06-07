@@ -69,7 +69,7 @@ impl<'a> std::fmt::Display for ParserError<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ParserErrorKind {
     ExpectedToken {
         expected: TokenKind,
