@@ -32,3 +32,5 @@ let
 true
 false
 int
+fn
+return

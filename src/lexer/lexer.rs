@@ -260,6 +260,20 @@ impl<'a> Iterator for Lexer<'a> {
                                 self.last_pos + 1,
                             ));
                         }
+                        "fn" => {
+                            token = Some(self.make_token(
+                                TokenKind::KWFn,
+                                start_offset,
+                                self.last_pos + 1,
+                            ));
+                        }
+                        "return" => {
+                            token = Some(self.make_token(
+                                TokenKind::KWReturn,
+                                start_offset,
+                                self.last_pos + 1,
+                            ));
+                        }
                         _ => {
                             token = Some(self.make_token(
                                 TokenKind::Identifier,
@@ -278,211 +292,4 @@ impl<'a> Iterator for Lexer<'a> {
 
         token
     }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::source::SourceFile;
-
-    use super::*;
-
-    struct TokenTestCase {
-        pub input: &'static str,
-        pub expected: TokenKind,
-        pub expected_literal: &'static str,
-    }
-
-    #[test]
-    fn test_happypath_individual_tokens() {
-        let test_source = vec![
-            TokenTestCase {
-                input: ",",
-                expected: TokenKind::Comma,
-                expected_literal: ",",
-            },
-            TokenTestCase {
-                input: "/",
-                expected: TokenKind::Slash,
-                expected_literal: "/",
-            },
-            TokenTestCase {
-                input: "//comment\n",
-                expected: TokenKind::SingleLineComment,
-                expected_literal: "//comment",
-            },
-            TokenTestCase {
-                input: "//comment",
-                expected: TokenKind::SingleLineComment,
-                expected_literal: "//comment",
-            },
-            TokenTestCase {
-                input: "+",
-                expected: TokenKind::Plus,
-                expected_literal: "+",
-            },
-            TokenTestCase {
-                input: "-",
-                expected: TokenKind::Minus,
-                expected_literal: "-",
-            },
-            TokenTestCase {
-                input: "*",
-                expected: TokenKind::Asterisk,
-                expected_literal: "*",
-            },
-            TokenTestCase {
-                input: ">",
-                expected: TokenKind::Greater,
-                expected_literal: ">",
-            },
-            TokenTestCase {
-                input: ">=",
-                expected: TokenKind::GreaterEqual,
-                expected_literal: ">=",
-            },
-            TokenTestCase {
-                input: "<",
-                expected: TokenKind::Less,
-                expected_literal: "<",
-            },
-            TokenTestCase {
-                input: "<=",
-                expected: TokenKind::LessEqual,
-                expected_literal: "<=",
-            },
-            TokenTestCase {
-                input: "=",
-                expected: TokenKind::Equal,
-                expected_literal: "=",
-            },
-            TokenTestCase {
-                input: "==",
-                expected: TokenKind::EqualEqual,
-                expected_literal: "==",
-            },
-            TokenTestCase {
-                input: "!",
-                expected: TokenKind::Bang,
-                expected_literal: "!",
-            },
-            TokenTestCase {
-                input: "!=",
-                expected: TokenKind::BangEqual,
-                expected_literal: "!=",
-            },
-            TokenTestCase {
-                input: ";",
-                expected: TokenKind::Semicolon,
-                expected_literal: ";",
-            },
-            TokenTestCase {
-                input: "::",
-                expected: TokenKind::ColonColon,
-                expected_literal: "::",
-            },
-            TokenTestCase {
-                input: ":",
-                expected: TokenKind::Illegal,
-                expected_literal: ":",
-            },
-            TokenTestCase {
-                input: "(",
-                expected: TokenKind::LParen,
-                expected_literal: "(",
-            },
-            TokenTestCase {
-                input: ")",
-                expected: TokenKind::RParen,
-                expected_literal: ")",
-            },
-            TokenTestCase {
-                input: "{",
-                expected: TokenKind::LBrace,
-                expected_literal: "{",
-            },
-            TokenTestCase {
-                input: "}",
-                expected: TokenKind::RBrace,
-                expected_literal: "}",
-            },
-            TokenTestCase {
-                input: "\"string_lit\"",
-                expected: TokenKind::StringLit,
-                expected_literal: "\"string_lit\"",
-            },
-            TokenTestCase {
-                input: "\"unbalanced",
-                expected: TokenKind::UnbalancedQuote,
-                expected_literal: "\"unbalanced",
-            },
-            TokenTestCase {
-                input: "1234",
-                expected: TokenKind::Integer,
-                expected_literal: "1234",
-            },
-            TokenTestCase {
-                input: "124ab", //FIXME: actual = 124a, wrong
-                expected: TokenKind::Illegal,
-                expected_literal: "124a",
-            },
-            TokenTestCase {
-                input: "12!",
-                expected: TokenKind::Integer,
-                expected_literal: "12",
-            },
-            TokenTestCase {
-                input: "12,",
-                expected: TokenKind::Integer,
-                expected_literal: "12",
-            },
-            TokenTestCase {
-                input: "++",
-                expected: TokenKind::PlusPlus,
-                expected_literal: "++",
-            },
-            TokenTestCase {
-                input: "--",
-                expected: TokenKind::MinusMinus,
-                expected_literal: "--",
-            },
-            TokenTestCase {
-                input: "foobar",
-                expected: TokenKind::Identifier,
-                expected_literal: "foobar",
-            },
-            TokenTestCase {
-                input: "let",
-                expected: TokenKind::KWLet,
-                expected_literal: "let",
-            },
-            TokenTestCase {
-                input: "true",
-                expected: TokenKind::KWTrue,
-                expected_literal: "true",
-            },
-            TokenTestCase {
-                input: "false",
-                expected: TokenKind::KWFalse,
-                expected_literal: "false",
-            },
-            TokenTestCase {
-                input: "int",
-                expected: TokenKind::Identifier,
-                expected_literal: "int",
-            },
-        ];
-
-        for s in test_source.into_iter() {
-            let source = RefCell::new(SourceFile::new(0, "test".to_string(), s.input));
-            let mut lexer = Lexer::new(&source);
-            let token = lexer
-                .next()
-                .expect(&format!("Unexpected end of file while lexing {}", s.input));
-
-            assert_eq!(s.expected, token.kind);
-            assert_eq!(s.expected_literal, source.borrow().span_text(&token.span));
-        }
-    }
-
-    //TODO: add a comprehensive integration test for a code piece once the lexer is complete
 }

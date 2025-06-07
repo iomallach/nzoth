@@ -40,4 +40,6 @@ input_file: tests/resources/lexer_cases/all_valid_tokens.nz
   Token(kind: "true", literal: "true"),
   Token(kind: "false", literal: "false"),
   Token(kind: "identifier", literal: "int"),
+  Token(kind: "fn", literal: "fn"),
+  Token(kind: "return", literal: "return"),
 ]

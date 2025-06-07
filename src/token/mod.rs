@@ -34,6 +34,8 @@ pub enum TokenKind {
     KWLet,
     KWTrue,
     KWFalse,
+    KWFn,
+    KWReturn,
     Eof,
 }
 
@@ -71,6 +73,8 @@ impl Display for TokenKind {
             TokenKind::KWTrue => write!(f, "true"),
             TokenKind::KWFalse => write!(f, "false"),
             TokenKind::Eof => write!(f, "end of file"),
+            TokenKind::KWFn => write!(f, "fn"),
+            TokenKind::KWReturn => write!(f, "return"),
         }
     }
 }
