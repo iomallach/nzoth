@@ -7,6 +7,7 @@ use std::{
 
 use crate::{source::Span, token::TokenKind};
 
+#[derive(Debug)]
 pub struct Program {
     pub nodes: Vec<AstNode>,
 }

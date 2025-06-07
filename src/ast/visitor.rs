@@ -3,7 +3,7 @@ use super::{
     PrefixOp, Program, Statement,
 };
 
-trait Visitor {
+pub trait Visitor {
     type Output;
 
     fn visit_program(&mut self, program: &Program) -> Self::Output;
@@ -21,15 +21,15 @@ trait Visitor {
     fn visit_grouped_expression(&mut self, expr: &Expression) -> Self::Output;
 }
 
-pub struct ProgramPrinter;
+pub struct UnparsePrinter;
 
-impl ProgramPrinter {
+impl UnparsePrinter {
     pub fn print(program: &Program) -> String {
         Self.visit_program(program)
     }
 }
 
-impl Visitor for ProgramPrinter {
+impl Visitor for UnparsePrinter {
     type Output = String;
 
     fn visit_program(&mut self, program: &Program) -> Self::Output {

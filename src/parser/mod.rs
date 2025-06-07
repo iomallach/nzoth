@@ -352,10 +352,9 @@ mod tests {
 
     use crate::{
         ast::{
-            AstNode, Expression, InfixOp, NumericLiteral, PrefixOp, Statement, Type,
-            visitor::ProgramPrinter,
+            AstNode, Expression, InfixOp, NumericLiteral, PrefixOp, Statement,
+            visitor::UnparsePrinter,
         },
-        lexer::lexer::Lexer,
         source::{SourceFile, Span},
     };
 
@@ -383,115 +382,6 @@ mod tests {
                 )
             }
             _ => unreachable!(),
-        }
-    }
-
-    fn test_identifier(expected: &str, actual: &Expression) {
-        if let Expression::Identifier(actual_name, _) = actual {
-            assert_eq!(expected, actual_name);
-        } else {
-            unreachable!();
-        }
-    }
-
-    #[test]
-    fn test_happypath_parser_let_declarations() {
-        let tests = vec![
-            (
-                "let foo = 1;",
-                "foo",
-                Expression::NumericLiteral(NumericLiteral::Integer(1), Span::default()),
-                None,
-            ),
-            (
-                "let foo :: int = 1;",
-                "foo",
-                Expression::NumericLiteral(NumericLiteral::Integer(1), Span::default()),
-                Some(Type::Integer),
-            ),
-        ];
-
-        for (s, ident, expr, ty) in tests {
-            let source = RefCell::new(SourceFile::new(0, "test".to_string(), s));
-
-            let mut tokens = Vec::new();
-            let mut lexer = Lexer::new(&source);
-            while let Some(token) = lexer.next() {
-                tokens.push(token);
-            }
-
-            let mut parser = Parser::new(&source);
-            let program = parser.parse();
-
-            assert_eq!(1, program.nodes.len());
-            if let AstNode::Statement(Statement::LetDeclaration(ld)) = program.nodes.get(0).unwrap()
-            {
-                test_identifier(ident, &ld.identifier);
-                test_expression(&expr, &ld.expression, s);
-                assert_eq!(ty, ld.ty);
-            } else {
-                unreachable!();
-            }
-        }
-    }
-
-    #[test]
-    fn test_happypath_parse_identifier() {
-        let tests = vec![("foo;", "foo"), ("bar;", "bar"), ("baz", "baz")];
-
-        for (code, expected) in tests {
-            let source = RefCell::new(SourceFile::new(0, "test".to_string(), code));
-
-            let mut parser = Parser::new(&source);
-            let program = parser.parse();
-
-            assert_eq!(1, program.nodes.len());
-
-            match program.nodes.get(0).unwrap() {
-                AstNode::Statement(Statement::Expression(es)) => {
-                    test_identifier(expected, &es.expression)
-                }
-                AstNode::Expression(expression) => test_identifier(expected, expression),
-                _ => unreachable!(),
-            }
-        }
-    }
-
-    #[test]
-    fn test_happypath_parse_assignments() {
-        let tests = vec![
-            (
-                "foo = bar;",
-                InfixOp::Assignment,
-                Expression::Identifier("foo".to_string(), Span::default()),
-                Expression::Identifier("bar".to_string(), Span::default()),
-            ),
-            (
-                "foo = 3;",
-                InfixOp::Assignment,
-                Expression::Identifier("foo".to_string(), Span::default()),
-                Expression::NumericLiteral(NumericLiteral::Integer(3), Span::default()),
-            ),
-        ];
-
-        for (code, expected_op, expected_left, expected_right) in tests {
-            let source = RefCell::new(SourceFile::new(0, "test".to_string(), code));
-
-            let mut parser = Parser::new(&source);
-            let program = parser.parse();
-
-            assert_eq!(1, program.nodes.len());
-            let expr = match program.nodes.into_iter().next().unwrap() {
-                AstNode::Statement(Statement::Expression(es)) => es.expression,
-                AstNode::Expression(expression) => expression,
-                _ => unreachable!("Expected an infix expression"),
-            };
-
-            if let Expression::Infix(left, op, right, _) = &expr {
-                test_expression(&expected_left, left, code);
-                test_expression(&expected_right, right, code);
-                assert_eq!(*op, expected_op);
-            }
         }
     }
 
@@ -756,7 +646,7 @@ mod tests {
             let mut parser = Parser::new(&source);
             let program = parser.parse();
 
-            assert_eq!(expected, ProgramPrinter::print(&program));
+            assert_eq!(expected, UnparsePrinter::print(&program));
         }
     }
 }

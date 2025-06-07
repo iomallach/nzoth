@@ -1,0 +1,131 @@
+---
+source: tests/test_parser.rs
+expression: output
+input_file: tests/resources/parser_cases/valid_let_declarations.nz
+---
+Program {
+    nodes: [
+        Statement(
+            LetDeclaration(
+                LetDeclaration {
+                    identifier: Identifier(
+                        "foo",
+                        Span {
+                            start: Position {
+                                offset: 4,
+                                line: 0,
+                                column: 4,
+                            },
+                            end: Position {
+                                offset: 7,
+                                line: 0,
+                                column: 7,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                    expression: NumericLiteral(
+                        Integer(
+                            1,
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 10,
+                                line: 0,
+                                column: 10,
+                            },
+                            end: Position {
+                                offset: 11,
+                                line: 0,
+                                column: 11,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                    span: Span {
+                        start: Position {
+                            offset: 0,
+                            line: 0,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 11,
+                            line: 0,
+                            column: 11,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    ty: None,
+                },
+            ),
+        ),
+        Statement(
+            LetDeclaration(
+                LetDeclaration {
+                    identifier: Identifier(
+                        "foo",
+                        Span {
+                            start: Position {
+                                offset: 17,
+                                line: 1,
+                                column: 4,
+                            },
+                            end: Position {
+                                offset: 20,
+                                line: 1,
+                                column: 7,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                    expression: NumericLiteral(
+                        Integer(
+                            1,
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 30,
+                                line: 1,
+                                column: 17,
+                            },
+                            end: Position {
+                                offset: 31,
+                                line: 1,
+                                column: 18,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                    span: Span {
+                        start: Position {
+                            offset: 13,
+                            line: 1,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 31,
+                            line: 1,
+                            column: 18,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    ty: Some(
+                        Integer,
+                    ),
+                },
+            ),
+        ),
+    ],
+}
