@@ -7,7 +7,7 @@ use crate::ast::{
 };
 use crate::error::CompilationError;
 use crate::error::lexical_error::LexicalError;
-use crate::error::parser_error::{ParserError, ParserErrorKind};
+use crate::error::parser_error::ParserError;
 use crate::lexer::lexer::Lexer;
 use crate::source::{SourceFile, Span};
 use crate::token::{Token, TokenKind};
@@ -307,9 +307,11 @@ impl<'a> Parser<'a> {
 
     fn parse_type_annotation(&mut self) -> Result<Type, CompilationError<'a>> {
         match self.peek_token_kind()? {
-            TokenKind::KWInt => {
-                self.lexer.next();
-                Ok(Type::Integer)
+            TokenKind::Identifier => {
+                let token = self.lexer.next().expect("Never fails");
+                Ok(Type::Name(
+                    self.source_file.borrow().span_text(&token.span).to_string(),
+                ))
             }
             _ => todo!(),
         }

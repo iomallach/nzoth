@@ -122,7 +122,9 @@ Program {
                         ),
                     },
                     ty: Some(
-                        Integer,
+                        Name(
+                            "int",
+                        ),
                     ),
                 },
             ),

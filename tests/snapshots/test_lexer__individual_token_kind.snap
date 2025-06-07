@@ -1,6 +1,6 @@
 ---
 source: tests/test_lexer.rs
-expression: "PrintableTokens(tokens.into_iter().map(|t|\nPrintableToken::new(t, &source)).collect::<Vec<_>>())"
+expression: "SnapshotTokens(tokens.into_iter().map(|t|\nSnapshotToken::new(t, &source)).collect::<Vec<_>>())"
 input_file: tests/resources/lexer_cases/all_valid_tokens.nz
 ---
 [
@@ -39,5 +39,5 @@ input_file: tests/resources/lexer_cases/all_valid_tokens.nz
   Token(kind: "let", literal: "let"),
   Token(kind: "true", literal: "true"),
   Token(kind: "false", literal: "false"),
-  Token(kind: "int", literal: "int"),
+  Token(kind: "identifier", literal: "int"),
 ]

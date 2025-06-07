@@ -260,13 +260,6 @@ impl<'a> Iterator for Lexer<'a> {
                                 self.last_pos + 1,
                             ));
                         }
-                        "int" => {
-                            token = Some(self.make_token(
-                                TokenKind::KWInt,
-                                start_offset,
-                                self.last_pos + 1,
-                            ));
-                        }
                         _ => {
                             token = Some(self.make_token(
                                 TokenKind::Identifier,
@@ -474,7 +467,7 @@ mod tests {
             },
             TokenTestCase {
                 input: "int",
-                expected: TokenKind::KWInt,
+                expected: TokenKind::Identifier,
                 expected_literal: "int",
             },
         ];
