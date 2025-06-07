@@ -3,7 +3,7 @@ use std::iter::Peekable;
 
 use crate::ast::{
     AstNode, Block, Expression, ExpressionStatement, FuncDeclaration, FuncParameter, InfixOp,
-    LetDeclaration, NumericLiteral, Precedence, PrefixOp, Program, Statement, Type,
+    LetDeclaration, NumericLiteral, Precedence, PrefixOp, Program, Return, Statement, Type,
 };
 use crate::error::CompilationError;
 use crate::error::lexical_error::LexicalError;
@@ -69,6 +69,7 @@ impl<'a> Parser<'a> {
     pub fn parse_node(&mut self) -> Result<AstNode, CompilationError<'a>> {
         match self.peek_token_kind()? {
             TokenKind::KWLet => self.parse_let_declaration(),
+            TokenKind::KWReturn => self.parse_return(),
             TokenKind::Eof => Ok(AstNode::EndOfProgram),
             // TODO: skip to either linebreak or semicolon
             _ => self.parse_expression_node(),
@@ -220,6 +221,17 @@ impl<'a> Parser<'a> {
                 ParserError::unknown_symbol_in_let_declaration(next_token.span, &self.source_file),
             )),
         }
+    }
+
+    fn parse_return(&mut self) -> Result<AstNode, CompilationError<'a>> {
+        let return_token = self.next_token()?;
+        let return_expression = self.parse_expression(Precedence::Lowest)?;
+        self.expect_and_next(TokenKind::Semicolon)?;
+
+        Ok(AstNode::Statement(Statement::Return(Return {
+            span: Span::from_spans(return_token.span, return_expression.span()),
+            expression: return_expression,
+        })))
     }
 
     // TODO: 0% test coverage

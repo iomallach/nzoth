@@ -2,7 +2,7 @@ use crate::ast::Type;
 
 use super::{
     AstNode, Block, Expression, ExpressionStatement, FuncDeclaration, FuncParameter, InfixOp,
-    LetDeclaration, NumericLiteral, PrefixOp, Program, Statement,
+    LetDeclaration, NumericLiteral, PrefixOp, Program, Return, Statement,
 };
 
 pub trait Visitor {
@@ -14,6 +14,7 @@ pub trait Visitor {
     fn visit_let_declaration(&mut self, let_decl: &LetDeclaration) -> Self::Output;
     fn visit_func_declaration(&mut self, func_decl: &FuncDeclaration) -> Self::Output;
     fn visit_func_parameter(&mut self, param: &FuncParameter) -> Self::Output;
+    fn visit_return(&mut self, ret: &Return) -> Self::Output;
     fn visit_expression_statement(&mut self, expr_stmt: &ExpressionStatement) -> Self::Output;
     fn visit_block(&mut self, block: &Block) -> Self::Output;
     fn visit_expression_node(&mut self, expr: &Expression) -> Self::Output;
@@ -59,6 +60,7 @@ impl Visitor for UnparsePrinter {
             Statement::Block(block) => self.visit_block(block),
             Statement::Expression(expr_stmt) => self.visit_expression_statement(expr_stmt),
             Statement::FuncDeclaration(fd) => self.visit_func_declaration(fd),
+            Statement::Return(ret) => self.visit_return(ret),
         }
     }
 
@@ -102,6 +104,10 @@ impl Visitor for UnparsePrinter {
                 panic!("TODO")
             }
         )
+    }
+
+    fn visit_return(&mut self, ret: &Return) -> Self::Output {
+        format!("return {};", self.visit_expression_node(&ret.expression))
     }
 
     fn visit_expression_statement(&mut self, expr_stmt: &ExpressionStatement) -> Self::Output {

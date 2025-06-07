@@ -45,6 +45,7 @@ pub enum Statement {
     Expression(ExpressionStatement),
     Block(Block),
     FuncDeclaration(FuncDeclaration),
+    Return(Return),
     //function declaration
     //if statement
     //while loop statement
@@ -87,6 +88,12 @@ pub struct FuncDeclaration {
 pub struct FuncParameter {
     pub identifier: Expression,
     pub ty: Type,
+    pub span: Span,
+}
+
+#[derive(Debug)]
+pub struct Return {
+    pub expression: Expression,
     pub span: Span,
 }
 

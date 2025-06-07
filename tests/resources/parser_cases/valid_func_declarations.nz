@@ -1,3 +1,7 @@
 let fn foo(bar :: int, baz :: float) :: float {
   bar + baz
 }
+
+let fn foo(bar :: int, baz :: float) :: float {
+    return bar + baz;
+}

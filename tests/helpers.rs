@@ -131,4 +131,8 @@ impl<'a> Visitor for SnapshotVisitor<'a> {
     fn visit_func_parameter(&mut self, param: &nzoth::ast::FuncParameter) -> Self::Output {
         todo!()
     }
+
+    fn visit_return(&mut self, ret: &nzoth::ast::Return) -> Self::Output {
+        todo!()
+    }
 }
