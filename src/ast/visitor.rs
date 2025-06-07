@@ -66,7 +66,7 @@ impl Visitor for UnparsePrinter {
 
     fn visit_let_declaration(&mut self, let_decl: &LetDeclaration) -> Self::Output {
         let mut out = String::new();
-        out.push_str(format!("let {}", self.visit_expression_node(&let_decl.identifier)).as_str());
+        out.push_str(format!("let {}", let_decl.identifier).as_str());
 
         if let Some(ty) = &let_decl.ty {
             out.push_str(format!(" :: {ty}").as_str());
@@ -78,13 +78,7 @@ impl Visitor for UnparsePrinter {
 
     fn visit_func_declaration(&mut self, func_decl: &FuncDeclaration) -> Self::Output {
         let mut out = String::new();
-        out.push_str(
-            format!(
-                "let fn{}",
-                self.visit_expression_node(&func_decl.identifier)
-            )
-            .as_str(),
-        );
+        out.push_str(format!("let fn{}", func_decl.identifier).as_str());
         out.push_str("(");
         for param in &func_decl.paramemetrs {
             out.push_str(format!("{},", self.visit_func_parameter(param)).as_str());
@@ -96,7 +90,7 @@ impl Visitor for UnparsePrinter {
     fn visit_func_parameter(&mut self, param: &FuncParameter) -> Self::Output {
         format!(
             "{} :: {}",
-            self.visit_expression_node(&param.identifier),
+            param.identifier,
             //TODO: visit type
             if let Type::Name(n) = &param.ty {
                 n

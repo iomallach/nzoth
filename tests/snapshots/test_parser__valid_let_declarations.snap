@@ -8,24 +8,7 @@ Program {
         Statement(
             LetDeclaration(
                 LetDeclaration {
-                    identifier: Identifier(
-                        "foo",
-                        Span {
-                            start: Position {
-                                offset: 4,
-                                line: 0,
-                                column: 4,
-                            },
-                            end: Position {
-                                offset: 7,
-                                line: 0,
-                                column: 7,
-                            },
-                            file: FileId(
-                                0,
-                            ),
-                        },
-                    ),
+                    identifier: "foo",
                     expression: NumericLiteral(
                         Integer(
                             1,
@@ -68,24 +51,7 @@ Program {
         Statement(
             LetDeclaration(
                 LetDeclaration {
-                    identifier: Identifier(
-                        "foo",
-                        Span {
-                            start: Position {
-                                offset: 17,
-                                line: 1,
-                                column: 4,
-                            },
-                            end: Position {
-                                offset: 20,
-                                line: 1,
-                                column: 7,
-                            },
-                            file: FileId(
-                                0,
-                            ),
-                        },
-                    ),
+                    identifier: "foo",
                     expression: NumericLiteral(
                         Integer(
                             1,

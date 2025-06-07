@@ -56,7 +56,7 @@ pub enum Statement {
 
 #[derive(Debug)]
 pub struct LetDeclaration {
-    pub identifier: Expression,
+    pub identifier: String,
     pub expression: Expression,
     pub span: Span,
     pub ty: Option<Type>,
@@ -77,7 +77,7 @@ pub struct Block {
 
 #[derive(Debug)]
 pub struct FuncDeclaration {
-    pub identifier: Expression,
+    pub identifier: String,
     pub paramemetrs: Vec<FuncParameter>,
     pub body: Block,
     pub return_type: Option<Type>,
@@ -86,7 +86,7 @@ pub struct FuncDeclaration {
 
 #[derive(Debug)]
 pub struct FuncParameter {
-    pub identifier: Expression,
+    pub identifier: String,
     pub ty: Type,
     pub span: Span,
 }

@@ -49,7 +49,6 @@ impl<'a> Parser<'a> {
 
     fn synchronize_parser(&mut self) {
         loop {
-            eprintln!("Loop cycle");
             match self.peek_token_kind() {
                 Ok(kind) if matches!(kind, TokenKind::Eof | TokenKind::Semicolon) => {
                     self.lexer.next();
@@ -109,13 +108,11 @@ impl<'a> Parser<'a> {
         let block = self.parse_block()?;
 
         Ok(FuncDeclaration {
-            identifier: Expression::Identifier(
-                self.source_file
-                    .borrow()
-                    .span_text(&identifier_token.span)
-                    .to_string(),
-                identifier_token.span,
-            ),
+            identifier: self
+                .source_file
+                .borrow()
+                .span_text(&identifier_token.span)
+                .to_string(),
             paramemetrs: func_parameters,
             body: block,
             return_type: return_ty,
@@ -140,13 +137,11 @@ impl<'a> Parser<'a> {
 
             let param_type_token = self.expect_and_next(TokenKind::Identifier)?;
             func_params.push(FuncParameter {
-                identifier: Expression::Identifier(
-                    self.source_file
-                        .borrow()
-                        .span_text(&param_identifier_token.span)
-                        .to_string(),
-                    param_identifier_token.span,
-                ),
+                identifier: self
+                    .source_file
+                    .borrow()
+                    .span_text(&param_identifier_token.span)
+                    .to_string(),
                 ty: Type::Name(
                     self.source_file
                         .borrow()
@@ -192,10 +187,7 @@ impl<'a> Parser<'a> {
 
         //TODO: figure out the span here (now line vs the span of the name)
         Ok(LetDeclaration {
-            identifier: Expression::Identifier(
-                sf.span_text(&identifier_token.span).to_string(),
-                identifier_token.span,
-            ),
+            identifier: sf.span_text(&identifier_token.span).to_string(),
             expression,
             span: Span {
                 start: let_token.span.start,

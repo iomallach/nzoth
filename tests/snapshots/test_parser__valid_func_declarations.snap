@@ -8,44 +8,10 @@ Program {
         Statement(
             FuncDeclaration(
                 FuncDeclaration {
-                    identifier: Identifier(
-                        "foo",
-                        Span {
-                            start: Position {
-                                offset: 7,
-                                line: 0,
-                                column: 7,
-                            },
-                            end: Position {
-                                offset: 10,
-                                line: 0,
-                                column: 10,
-                            },
-                            file: FileId(
-                                0,
-                            ),
-                        },
-                    ),
+                    identifier: "foo",
                     paramemetrs: [
                         FuncParameter {
-                            identifier: Identifier(
-                                "bar",
-                                Span {
-                                    start: Position {
-                                        offset: 11,
-                                        line: 0,
-                                        column: 11,
-                                    },
-                                    end: Position {
-                                        offset: 14,
-                                        line: 0,
-                                        column: 14,
-                                    },
-                                    file: FileId(
-                                        0,
-                                    ),
-                                },
-                            ),
+                            identifier: "bar",
                             ty: Name(
                                 "int",
                             ),
@@ -66,24 +32,7 @@ Program {
                             },
                         },
                         FuncParameter {
-                            identifier: Identifier(
-                                "baz",
-                                Span {
-                                    start: Position {
-                                        offset: 23,
-                                        line: 0,
-                                        column: 23,
-                                    },
-                                    end: Position {
-                                        offset: 26,
-                                        line: 0,
-                                        column: 26,
-                                    },
-                                    file: FileId(
-                                        0,
-                                    ),
-                                },
-                            ),
+                            identifier: "baz",
                             ty: Name(
                                 "float",
                             ),
@@ -206,44 +155,10 @@ Program {
         Statement(
             FuncDeclaration(
                 FuncDeclaration {
-                    identifier: Identifier(
-                        "foo",
-                        Span {
-                            start: Position {
-                                offset: 70,
-                                line: 4,
-                                column: 7,
-                            },
-                            end: Position {
-                                offset: 73,
-                                line: 4,
-                                column: 10,
-                            },
-                            file: FileId(
-                                0,
-                            ),
-                        },
-                    ),
+                    identifier: "foo",
                     paramemetrs: [
                         FuncParameter {
-                            identifier: Identifier(
-                                "bar",
-                                Span {
-                                    start: Position {
-                                        offset: 74,
-                                        line: 4,
-                                        column: 11,
-                                    },
-                                    end: Position {
-                                        offset: 77,
-                                        line: 4,
-                                        column: 14,
-                                    },
-                                    file: FileId(
-                                        0,
-                                    ),
-                                },
-                            ),
+                            identifier: "bar",
                             ty: Name(
                                 "int",
                             ),
@@ -264,24 +179,7 @@ Program {
                             },
                         },
                         FuncParameter {
-                            identifier: Identifier(
-                                "baz",
-                                Span {
-                                    start: Position {
-                                        offset: 86,
-                                        line: 4,
-                                        column: 23,
-                                    },
-                                    end: Position {
-                                        offset: 89,
-                                        line: 4,
-                                        column: 26,
-                                    },
-                                    file: FileId(
-                                        0,
-                                    ),
-                                },
-                            ),
+                            identifier: "baz",
                             ty: Name(
                                 "float",
                             ),
