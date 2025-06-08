@@ -89,3 +89,8 @@ fn test_valid_prefix_expressions() {
 fn test_valid_boolean_expressions() {
     test_valid_cases("resources/parser_cases/valid_boolean_expressions.nz");
 }
+
+#[test]
+fn test_valid_infix_expressions() {
+    test_valid_cases("resources/parser_cases/valid_infix_expressions.nz");
+}

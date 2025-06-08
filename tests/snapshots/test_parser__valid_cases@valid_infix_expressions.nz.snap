@@ -1,0 +1,1398 @@
+---
+source: tests/test_parser.rs
+input_file: tests/resources/parser_cases/valid_infix_expressions.nz
+---
+Program {
+    nodes: [
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 0,
+                            line: 0,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 1,
+                            line: 0,
+                            column: 1,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 0,
+                                    line: 0,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 1,
+                                    line: 0,
+                                    column: 1,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Add,
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 4,
+                                    line: 0,
+                                    column: 4,
+                                },
+                                end: Position {
+                                    offset: 5,
+                                    line: 0,
+                                    column: 5,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 0,
+                                line: 0,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 1,
+                                line: 0,
+                                column: 1,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 7,
+                            line: 1,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 8,
+                            line: 1,
+                            column: 1,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 7,
+                                    line: 1,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 8,
+                                    line: 1,
+                                    column: 1,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Subtract,
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 11,
+                                    line: 1,
+                                    column: 4,
+                                },
+                                end: Position {
+                                    offset: 12,
+                                    line: 1,
+                                    column: 5,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 7,
+                                line: 1,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 8,
+                                line: 1,
+                                column: 1,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 14,
+                            line: 2,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 15,
+                            line: 2,
+                            column: 1,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 14,
+                                    line: 2,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 15,
+                                    line: 2,
+                                    column: 1,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Multiply,
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 18,
+                                    line: 2,
+                                    column: 4,
+                                },
+                                end: Position {
+                                    offset: 19,
+                                    line: 2,
+                                    column: 5,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 14,
+                                line: 2,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 15,
+                                line: 2,
+                                column: 1,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 21,
+                            line: 3,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 22,
+                            line: 3,
+                            column: 1,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 21,
+                                    line: 3,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 22,
+                                    line: 3,
+                                    column: 1,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Divide,
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 25,
+                                    line: 3,
+                                    column: 4,
+                                },
+                                end: Position {
+                                    offset: 26,
+                                    line: 3,
+                                    column: 5,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 21,
+                                line: 3,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 22,
+                                line: 3,
+                                column: 1,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 28,
+                            line: 4,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 29,
+                            line: 4,
+                            column: 1,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 28,
+                                    line: 4,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 29,
+                                    line: 4,
+                                    column: 1,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        NotEquals,
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 33,
+                                    line: 4,
+                                    column: 5,
+                                },
+                                end: Position {
+                                    offset: 34,
+                                    line: 4,
+                                    column: 6,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 28,
+                                line: 4,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 29,
+                                line: 4,
+                                column: 1,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 36,
+                            line: 5,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 37,
+                            line: 5,
+                            column: 1,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 36,
+                                    line: 5,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 37,
+                                    line: 5,
+                                    column: 1,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Equals,
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 41,
+                                    line: 5,
+                                    column: 5,
+                                },
+                                end: Position {
+                                    offset: 42,
+                                    line: 5,
+                                    column: 6,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 36,
+                                line: 5,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 37,
+                                line: 5,
+                                column: 1,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 44,
+                            line: 6,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 45,
+                            line: 6,
+                            column: 1,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 44,
+                                    line: 6,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 45,
+                                    line: 6,
+                                    column: 1,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        GreaterThan,
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 48,
+                                    line: 6,
+                                    column: 4,
+                                },
+                                end: Position {
+                                    offset: 49,
+                                    line: 6,
+                                    column: 5,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 44,
+                                line: 6,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 45,
+                                line: 6,
+                                column: 1,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 51,
+                            line: 7,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 52,
+                            line: 7,
+                            column: 1,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 51,
+                                    line: 7,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 52,
+                                    line: 7,
+                                    column: 1,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        LessThan,
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 55,
+                                    line: 7,
+                                    column: 4,
+                                },
+                                end: Position {
+                                    offset: 56,
+                                    line: 7,
+                                    column: 5,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 51,
+                                line: 7,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 52,
+                                line: 7,
+                                column: 1,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 58,
+                            line: 8,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 59,
+                            line: 8,
+                            column: 1,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 58,
+                                    line: 8,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 59,
+                                    line: 8,
+                                    column: 1,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        GreaterThanEquals,
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 63,
+                                    line: 8,
+                                    column: 5,
+                                },
+                                end: Position {
+                                    offset: 64,
+                                    line: 8,
+                                    column: 6,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 58,
+                                line: 8,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 59,
+                                line: 8,
+                                column: 1,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 66,
+                            line: 9,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 67,
+                            line: 9,
+                            column: 1,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 66,
+                                    line: 9,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 67,
+                                    line: 9,
+                                    column: 1,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        LessThanEquals,
+                        NumericLiteral(
+                            Integer(
+                                5,
+                            ),
+                            Span {
+                                start: Position {
+                                    offset: 71,
+                                    line: 9,
+                                    column: 5,
+                                },
+                                end: Position {
+                                    offset: 72,
+                                    line: 9,
+                                    column: 6,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 66,
+                                line: 9,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 67,
+                                line: 9,
+                                column: 1,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 74,
+                            line: 10,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 78,
+                            line: 10,
+                            column: 4,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        Bool(
+                            true,
+                            Span {
+                                start: Position {
+                                    offset: 74,
+                                    line: 10,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 78,
+                                    line: 10,
+                                    column: 4,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        NotEquals,
+                        Bool(
+                            false,
+                            Span {
+                                start: Position {
+                                    offset: 82,
+                                    line: 10,
+                                    column: 8,
+                                },
+                                end: Position {
+                                    offset: 87,
+                                    line: 10,
+                                    column: 13,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 74,
+                                line: 10,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 78,
+                                line: 10,
+                                column: 4,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 89,
+                            line: 11,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 94,
+                            line: 11,
+                            column: 5,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        Bool(
+                            false,
+                            Span {
+                                start: Position {
+                                    offset: 89,
+                                    line: 11,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 94,
+                                    line: 11,
+                                    column: 5,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        NotEquals,
+                        Bool(
+                            true,
+                            Span {
+                                start: Position {
+                                    offset: 98,
+                                    line: 11,
+                                    column: 9,
+                                },
+                                end: Position {
+                                    offset: 102,
+                                    line: 11,
+                                    column: 13,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 89,
+                                line: 11,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 94,
+                                line: 11,
+                                column: 5,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 104,
+                            line: 12,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 108,
+                            line: 12,
+                            column: 4,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        Bool(
+                            true,
+                            Span {
+                                start: Position {
+                                    offset: 104,
+                                    line: 12,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 108,
+                                    line: 12,
+                                    column: 4,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        NotEquals,
+                        Bool(
+                            true,
+                            Span {
+                                start: Position {
+                                    offset: 112,
+                                    line: 12,
+                                    column: 8,
+                                },
+                                end: Position {
+                                    offset: 116,
+                                    line: 12,
+                                    column: 12,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 104,
+                                line: 12,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 108,
+                                line: 12,
+                                column: 4,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 118,
+                            line: 13,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 123,
+                            line: 13,
+                            column: 5,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        Bool(
+                            false,
+                            Span {
+                                start: Position {
+                                    offset: 118,
+                                    line: 13,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 123,
+                                    line: 13,
+                                    column: 5,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        NotEquals,
+                        Bool(
+                            false,
+                            Span {
+                                start: Position {
+                                    offset: 127,
+                                    line: 13,
+                                    column: 9,
+                                },
+                                end: Position {
+                                    offset: 132,
+                                    line: 13,
+                                    column: 14,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 118,
+                                line: 13,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 123,
+                                line: 13,
+                                column: 5,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 134,
+                            line: 14,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 138,
+                            line: 14,
+                            column: 4,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        Bool(
+                            true,
+                            Span {
+                                start: Position {
+                                    offset: 134,
+                                    line: 14,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 138,
+                                    line: 14,
+                                    column: 4,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Equals,
+                        Bool(
+                            false,
+                            Span {
+                                start: Position {
+                                    offset: 142,
+                                    line: 14,
+                                    column: 8,
+                                },
+                                end: Position {
+                                    offset: 147,
+                                    line: 14,
+                                    column: 13,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 134,
+                                line: 14,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 138,
+                                line: 14,
+                                column: 4,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 149,
+                            line: 15,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 154,
+                            line: 15,
+                            column: 5,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        Bool(
+                            false,
+                            Span {
+                                start: Position {
+                                    offset: 149,
+                                    line: 15,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 154,
+                                    line: 15,
+                                    column: 5,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Equals,
+                        Bool(
+                            true,
+                            Span {
+                                start: Position {
+                                    offset: 158,
+                                    line: 15,
+                                    column: 9,
+                                },
+                                end: Position {
+                                    offset: 162,
+                                    line: 15,
+                                    column: 13,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 149,
+                                line: 15,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 154,
+                                line: 15,
+                                column: 5,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 164,
+                            line: 16,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 169,
+                            line: 16,
+                            column: 5,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        Bool(
+                            false,
+                            Span {
+                                start: Position {
+                                    offset: 164,
+                                    line: 16,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 169,
+                                    line: 16,
+                                    column: 5,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Equals,
+                        Bool(
+                            false,
+                            Span {
+                                start: Position {
+                                    offset: 173,
+                                    line: 16,
+                                    column: 9,
+                                },
+                                end: Position {
+                                    offset: 178,
+                                    line: 16,
+                                    column: 14,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 164,
+                                line: 16,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 169,
+                                line: 16,
+                                column: 5,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+        Statement(
+            Expression(
+                ExpressionStatement {
+                    span: Span {
+                        start: Position {
+                            offset: 180,
+                            line: 17,
+                            column: 0,
+                        },
+                        end: Position {
+                            offset: 184,
+                            line: 17,
+                            column: 4,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                    expression: Infix(
+                        Bool(
+                            true,
+                            Span {
+                                start: Position {
+                                    offset: 180,
+                                    line: 17,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 184,
+                                    line: 17,
+                                    column: 4,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Equals,
+                        Bool(
+                            true,
+                            Span {
+                                start: Position {
+                                    offset: 188,
+                                    line: 17,
+                                    column: 8,
+                                },
+                                end: Position {
+                                    offset: 192,
+                                    line: 17,
+                                    column: 12,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Span {
+                            start: Position {
+                                offset: 180,
+                                line: 17,
+                                column: 0,
+                            },
+                            end: Position {
+                                offset: 184,
+                                line: 17,
+                                column: 4,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ),
+    ],
+}
