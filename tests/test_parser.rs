@@ -1,91 +1,40 @@
 mod helpers;
-use std::cell::RefCell;
+use std::{cell::RefCell, path::Path};
 
 use helpers::SnapshotErrors;
 use insta;
 use nzoth::{parser::Parser, source::SourceFile};
 
-#[test]
-fn test_valid_let_declarations() {
-    insta::glob!("resources/parser_cases/valid_let_declarations.nz", |path| {
-        let contents = std::fs::read_to_string(path).expect("Expect path exists");
-        let source = RefCell::new(SourceFile::new(
-            0,
-            path.file_name()
-                .expect("Expect a file")
-                .to_str()
-                .expect("No fail")
-                .to_string(),
-            contents.as_str(),
-        ));
-
-        let mut parser = Parser::new(&source);
-        let program = parser.parse();
-        assert_eq!(2, program.nodes.len());
-
-        let output = format!("{:#?}", program);
-
-        insta::assert_snapshot!(output);
-    })
+fn create_source_file<'a>(path: &'a Path, contents: &'a str) -> RefCell<SourceFile<'a>> {
+    RefCell::new(SourceFile::new(
+        0,
+        path.file_name()
+            .expect("Expect a file")
+            .to_str()
+            .expect("No fail")
+            .to_string(),
+        contents,
+    ))
 }
 
-#[test]
-fn test_valid_identifier() {
-    insta::glob!("resources/parser_cases/valid_identifiers.nz", |path| {
+fn test_valid_cases(glob_pattern: &str) {
+    insta::glob!(glob_pattern, |path| {
         let contents = std::fs::read_to_string(path).expect("Expect path exists");
-        let source = RefCell::new(SourceFile::new(
-            0,
-            path.file_name()
-                .expect("Expect a file")
-                .to_str()
-                .expect("No fail")
-                .to_string(),
-            contents.as_str(),
-        ));
+        let source = create_source_file(path, contents.as_str());
 
         let mut parser = Parser::new(&source);
         let program = parser.parse();
+        assert_eq!(parser.errors().len(), 0);
 
         let output = format!("{:#?}", program);
         insta::assert_snapshot!(output);
     })
 }
 
-#[test]
-fn test_valid_assignments() {
-    insta::glob!("resources/parser_cases/valid_assignments.nz", |path| {
+fn test_invalid_cases(glob_pattern: &str) {
+    insta::glob!(glob_pattern, |path| {
         let contents = std::fs::read_to_string(path).expect("Expect path exists");
-        let source = RefCell::new(SourceFile::new(
-            0,
-            path.file_name()
-                .expect("Expect a file")
-                .to_str()
-                .expect("No fail")
-                .to_string(),
-            contents.as_str(),
-        ));
-
-        let mut parser = Parser::new(&source);
-        let program = parser.parse();
-
-        let output = format!("{:#?}", program);
-        insta::assert_snapshot!(output);
-    })
-}
-
-#[test]
-fn test_invalid_assignments() {
-    insta::glob!("resources/parser_cases/invalid_assignments.nz", |path| {
-        let contents = std::fs::read_to_string(path).expect("Expect path exists");
-        let source = RefCell::new(SourceFile::new(
-            0,
-            path.file_name()
-                .expect("Expect a file")
-                .to_str()
-                .expect("No fail")
-                .to_string(),
-            contents.as_str(),
-        ));
+        let source = create_source_file(path, contents.as_str());
 
         let mut parser = Parser::new(&source);
         _ = parser.parse();
@@ -95,27 +44,31 @@ fn test_invalid_assignments() {
 }
 
 #[test]
+fn test_valid_let_declarations() {
+    test_valid_cases("resources/parser_cases/valid_let_declarations.nz");
+}
+
+#[test]
+fn test_valid_identifier() {
+    test_valid_cases("resources/parser_cases/valid_identifiers.nz");
+}
+
+#[test]
+fn test_valid_assignments() {
+    test_valid_cases("resources/parser_cases/valid_assignments.nz");
+}
+
+#[test]
+fn test_invalid_assignments() {
+    test_invalid_cases("resources/parser_cases/invalid_assignments.nz");
+}
+
+#[test]
 fn test_valid_func_declarations() {
-    insta::glob!(
-        "resources/parser_cases/valid_func_declarations.nz",
-        |path| {
-            let contents = std::fs::read_to_string(path).expect("Expect path exists");
-            let source = RefCell::new(SourceFile::new(
-                0,
-                path.file_name()
-                    .expect("Expect a file")
-                    .to_str()
-                    .expect("No fail")
-                    .to_string(),
-                contents.as_str(),
-            ));
+    test_valid_cases("resources/parser_cases/valid_func_declarations.nz");
+}
 
-            let mut parser = Parser::new(&source);
-            let program = parser.parse();
-            assert_eq!(parser.errors().len(), 0);
-
-            let output = format!("{:#?}", program);
-            insta::assert_snapshot!(output);
-        }
-    )
+#[test]
+fn test_valid_prefix_expressions() {
+    test_valid_cases("resources/parser_cases/valid_prefix_expressions.nz");
 }
