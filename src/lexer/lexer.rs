@@ -184,7 +184,6 @@ impl<'a> Iterator for Lexer<'a> {
                     token = Some(self.make_token(TokenKind::RBrace, start_offset, start_offset + 1))
                 }
                 '"' => {
-                    //TODO: could be potentially replaced with .by_ref().take_while().last()
                     while let Some((j, _)) = self
                         .source
                         .next_if(|(_, c)| *c != '"' && *c != ';' && *c != '\n')
@@ -212,23 +211,40 @@ impl<'a> Iterator for Lexer<'a> {
                         self.last_pos = j;
                     }
                     // handle cases like 134ab, which is illegal
-                    //FIXME: review individual token snapshot: clearly wrong on 124ab
-                    if self.source.peek().is_some_and(|(_, c)| c.is_alphabetic()) {
-                        //TODO: ^ is wrong, we should rather look for an alphabetic and mark it
-                        //illegal. Also consume until not alphanumeric
-                        token = Some(self.make_token(
-                            TokenKind::Illegal,
-                            start_offset,
-                            self.last_pos + 2,
-                        ));
-                    } else {
-                        token = Some(self.make_token(
-                            TokenKind::Integer,
-                            start_offset,
-                            self.last_pos + 1,
-                        ));
+                    match self.source.peek() {
+                        Some((_, c)) if c.is_alphabetic() => {
+                            while let Some((j, _)) =
+                                self.source.next_if(|(_, c)| c.is_alphanumeric())
+                            {
+                                self.last_pos = j;
+                            }
+                            token = Some(self.make_token(
+                                TokenKind::Illegal,
+                                start_offset,
+                                self.last_pos + 1,
+                            ));
+                        }
+                        Some((_, c)) if *c == '.' => {
+                            // skip the dot
+                            self.source.next();
+                            while let Some((j, _)) = self.source.next_if(|(_, c)| c.is_numeric()) {
+                                self.last_pos = j;
+                            }
+                            //TODO: handle 12.43abc?
+                            token = Some(self.make_token(
+                                TokenKind::Float,
+                                start_offset,
+                                self.last_pos + 1,
+                            ))
+                        }
+                        _ => {
+                            token = Some(self.make_token(
+                                TokenKind::Integer,
+                                start_offset,
+                                self.last_pos + 1,
+                            ))
+                        }
                     }
-                    //TODO: add float lexing
                 }
                 c if c.is_alphabetic() => {
                     while let Some((j, _)) = self.source.next_if(|(_, c)| c.is_alphanumeric()) {

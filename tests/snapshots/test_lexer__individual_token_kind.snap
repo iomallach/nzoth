@@ -4,6 +4,7 @@ expression: "SnapshotTokens(tokens.into_iter().map(|t|\nSnapshotToken::new(t, &s
 input_file: tests/resources/lexer_cases/all_valid_tokens.nz
 ---
 [
+  Token(kind: "string literal", literal: ""string lit""),
   Token(kind: ",", literal: ","),
   Token(kind: "/", literal: "/"),
   Token(kind: "single line comment", literal: "//comment //comment"),
@@ -27,9 +28,9 @@ input_file: tests/resources/lexer_cases/all_valid_tokens.nz
   Token(kind: "}", literal: "}"),
   Token(kind: "string literal", literal: ""string lit""),
   Token(kind: "unbalanced quote", literal: ""unbalanced"),
+  Token(kind: "float", literal: "12.43"),
   Token(kind: "integer", literal: "1234"),
-  Token(kind: "illegal token", literal: "124a"),
-  Token(kind: "identifier", literal: "ab"),
+  Token(kind: "illegal token", literal: "124ab"),
   Token(kind: "integer", literal: "12"),
   Token(kind: "!", literal: "!"),
   Token(kind: "integer", literal: "12"),

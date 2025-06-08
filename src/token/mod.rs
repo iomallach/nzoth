@@ -29,6 +29,7 @@ pub enum TokenKind {
     StringLit,
     UnbalancedQuote,
     Integer,
+    Float,
     Illegal,
     Identifier,
     KWLet,
@@ -75,6 +76,7 @@ impl Display for TokenKind {
             TokenKind::Eof => write!(f, "end of file"),
             TokenKind::KWFn => write!(f, "fn"),
             TokenKind::KWReturn => write!(f, "return"),
+            TokenKind::Float => write!(f, "float"),
         }
     }
 }

@@ -1,3 +1,4 @@
+"string lit"
 ,
 /
 //comment //comment
@@ -21,6 +22,7 @@
 }
 "string lit"
 "unbalanced
+12.43
 1234
 124ab
 12!
