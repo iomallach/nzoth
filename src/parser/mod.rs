@@ -509,51 +509,6 @@ mod tests {
     }
 
     #[test]
-    fn test_happypath_parse_prefix_expressions() {
-        let tests = vec![
-            (
-                "-5;",
-                Expression::NumericLiteral(NumericLiteral::Integer(5), Span::default()),
-                PrefixOp::Negation,
-            ),
-            (
-                "!true;",
-                Expression::Bool(true, Span::default()),
-                PrefixOp::BoolNegation,
-            ),
-            (
-                "!false;",
-                Expression::Bool(false, Span::default()),
-                PrefixOp::BoolNegation,
-            ),
-        ];
-
-        for (code, expected_expr, expected_op) in tests {
-            let source = RefCell::new(SourceFile::new(0, "test".to_string(), code));
-
-            let mut parser = Parser::new(&source);
-            let program = parser.parse();
-
-            assert_eq!(1, program.nodes.len());
-
-            let es = if let AstNode::Statement(Statement::Expression(es)) =
-                program.nodes.into_iter().next().unwrap()
-            {
-                es.expression
-            } else {
-                unreachable!("Expected expression statemenet");
-            };
-
-            if let Expression::Prefix(op, expr, _) = es {
-                test_expression(&expected_expr, &expr, code);
-                assert_eq!(expected_op, op);
-            } else {
-                unreachable!("Expected a prefix expression");
-            }
-        }
-    }
-
-    #[test]
     fn test_happypath_parse_boolean_expressions() {
         let tests = vec![
             ("true;", Expression::Bool(true, Span::default())),

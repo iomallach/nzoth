@@ -27,7 +27,13 @@ fn test_valid_cases(glob_pattern: &str) {
         assert_eq!(parser.errors().len(), 0);
 
         let output = format!("{:#?}", program);
-        insta::assert_snapshot!(output);
+        insta::with_settings!({
+            omit_expression => true,
+            input_file => path,
+            snapshot_suffix => path.file_name().unwrap().to_str().unwrap(),
+        }, {
+            insta::assert_snapshot!(output);
+        });
     })
 }
 
@@ -39,7 +45,13 @@ fn test_invalid_cases(glob_pattern: &str) {
         let mut parser = Parser::new(&source);
         _ = parser.parse();
 
-        insta::assert_snapshot!(SnapshotErrors(parser.errors()));
+        insta::with_settings!({
+            omit_expression => true,
+            input_file => path,
+            snapshot_suffix => path.file_name().unwrap().to_str().unwrap(),
+        }, {
+            insta::assert_snapshot!(SnapshotErrors(parser.errors()));
+        });
     })
 }
 
@@ -71,4 +83,9 @@ fn test_valid_func_declarations() {
 #[test]
 fn test_valid_prefix_expressions() {
     test_valid_cases("resources/parser_cases/valid_prefix_expressions.nz");
+}
+
+#[test]
+fn test_valid_boolean_expressions() {
+    test_valid_cases("resources/parser_cases/valid_boolean_expressions.nz");
 }

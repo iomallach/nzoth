@@ -1,6 +1,5 @@
 ---
 source: tests/test_parser.rs
-expression: output
 input_file: tests/resources/parser_cases/valid_prefix_expressions.nz
 ---
 Program {

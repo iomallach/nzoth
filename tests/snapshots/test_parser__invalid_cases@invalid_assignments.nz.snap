@@ -1,6 +1,5 @@
 ---
 source: tests/test_parser.rs
-expression: SnapshotErrors(parser.errors())
 input_file: tests/resources/parser_cases/invalid_assignments.nz
 ---
 Expected =, found ; at line 0, column 7:

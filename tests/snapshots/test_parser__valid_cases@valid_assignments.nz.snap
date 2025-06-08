@@ -1,7 +1,6 @@
 ---
 source: tests/test_parser.rs
-expression: output
-input_file: tests/resources/parser_cases/valid_prefix_expressions.nz
+input_file: tests/resources/parser_cases/valid_assignments.nz
 ---
 Program {
     nodes: [
@@ -15,30 +14,46 @@ Program {
                             column: 0,
                         },
                         end: Position {
-                            offset: 1,
+                            offset: 3,
                             line: 0,
-                            column: 1,
+                            column: 3,
                         },
                         file: FileId(
                             0,
                         ),
                     },
-                    expression: Prefix(
-                        Negation,
-                        NumericLiteral(
-                            Integer(
-                                5,
-                            ),
+                    expression: Infix(
+                        Identifier(
+                            "foo",
                             Span {
                                 start: Position {
-                                    offset: 1,
+                                    offset: 0,
                                     line: 0,
-                                    column: 1,
+                                    column: 0,
                                 },
                                 end: Position {
-                                    offset: 2,
+                                    offset: 3,
                                     line: 0,
-                                    column: 2,
+                                    column: 3,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Assignment,
+                        Identifier(
+                            "bar",
+                            Span {
+                                start: Position {
+                                    offset: 6,
+                                    line: 0,
+                                    column: 6,
+                                },
+                                end: Position {
+                                    offset: 9,
+                                    line: 0,
+                                    column: 9,
                                 },
                                 file: FileId(
                                     0,
@@ -52,66 +67,9 @@ Program {
                                 column: 0,
                             },
                             end: Position {
-                                offset: 2,
+                                offset: 3,
                                 line: 0,
-                                column: 2,
-                            },
-                            file: FileId(
-                                0,
-                            ),
-                        },
-                    ),
-                },
-            ),
-        ),
-        Statement(
-            Expression(
-                ExpressionStatement {
-                    span: Span {
-                        start: Position {
-                            offset: 4,
-                            line: 1,
-                            column: 0,
-                        },
-                        end: Position {
-                            offset: 5,
-                            line: 1,
-                            column: 1,
-                        },
-                        file: FileId(
-                            0,
-                        ),
-                    },
-                    expression: Prefix(
-                        BoolNegation,
-                        Bool(
-                            true,
-                            Span {
-                                start: Position {
-                                    offset: 5,
-                                    line: 1,
-                                    column: 1,
-                                },
-                                end: Position {
-                                    offset: 9,
-                                    line: 1,
-                                    column: 5,
-                                },
-                                file: FileId(
-                                    0,
-                                ),
-                            },
-                        ),
-                        Span {
-                            start: Position {
-                                offset: 4,
-                                line: 1,
-                                column: 0,
-                            },
-                            end: Position {
-                                offset: 9,
-                                line: 1,
-                                column: 5,
+                                column: 3,
                             },
                             file: FileId(
                                 0,
@@ -127,32 +85,52 @@ Program {
                     span: Span {
                         start: Position {
                             offset: 11,
-                            line: 2,
+                            line: 1,
                             column: 0,
                         },
                         end: Position {
-                            offset: 12,
-                            line: 2,
-                            column: 1,
+                            offset: 14,
+                            line: 1,
+                            column: 3,
                         },
                         file: FileId(
                             0,
                         ),
                     },
-                    expression: Prefix(
-                        BoolNegation,
-                        Bool(
-                            false,
+                    expression: Infix(
+                        Identifier(
+                            "foo",
                             Span {
                                 start: Position {
-                                    offset: 12,
-                                    line: 2,
-                                    column: 1,
+                                    offset: 11,
+                                    line: 1,
+                                    column: 0,
                                 },
                                 end: Position {
+                                    offset: 14,
+                                    line: 1,
+                                    column: 3,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                        Assignment,
+                        NumericLiteral(
+                            Integer(
+                                3,
+                            ),
+                            Span {
+                                start: Position {
                                     offset: 17,
-                                    line: 2,
+                                    line: 1,
                                     column: 6,
+                                },
+                                end: Position {
+                                    offset: 18,
+                                    line: 1,
+                                    column: 7,
                                 },
                                 file: FileId(
                                     0,
@@ -162,13 +140,13 @@ Program {
                         Span {
                             start: Position {
                                 offset: 11,
-                                line: 2,
+                                line: 1,
                                 column: 0,
                             },
                             end: Position {
-                                offset: 17,
-                                line: 2,
-                                column: 6,
+                                offset: 14,
+                                line: 1,
+                                column: 3,
                             },
                             file: FileId(
                                 0,

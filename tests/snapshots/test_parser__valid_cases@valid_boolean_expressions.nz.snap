@@ -1,7 +1,6 @@
 ---
 source: tests/test_parser.rs
-expression: output
-input_file: tests/resources/parser_cases/valid_identifiers.nz
+input_file: tests/resources/parser_cases/valid_boolean_expressions.nz
 ---
 Program {
     nodes: [
@@ -15,16 +14,16 @@ Program {
                             column: 0,
                         },
                         end: Position {
-                            offset: 3,
+                            offset: 4,
                             line: 0,
-                            column: 3,
+                            column: 4,
                         },
                         file: FileId(
                             0,
                         ),
                     },
-                    expression: Identifier(
-                        "foo",
+                    expression: Bool(
+                        true,
                         Span {
                             start: Position {
                                 offset: 0,
@@ -32,9 +31,9 @@ Program {
                                 column: 0,
                             },
                             end: Position {
-                                offset: 3,
+                                offset: 4,
                                 line: 0,
-                                column: 3,
+                                column: 4,
                             },
                             file: FileId(
                                 0,
@@ -49,56 +48,36 @@ Program {
                 ExpressionStatement {
                     span: Span {
                         start: Position {
-                            offset: 5,
+                            offset: 6,
                             line: 1,
                             column: 0,
                         },
                         end: Position {
-                            offset: 8,
+                            offset: 11,
                             line: 1,
-                            column: 3,
+                            column: 5,
                         },
                         file: FileId(
                             0,
                         ),
                     },
-                    expression: Identifier(
-                        "bar",
+                    expression: Bool(
+                        false,
                         Span {
                             start: Position {
-                                offset: 5,
+                                offset: 6,
                                 line: 1,
                                 column: 0,
                             },
                             end: Position {
-                                offset: 8,
+                                offset: 11,
                                 line: 1,
-                                column: 3,
+                                column: 5,
                             },
                             file: FileId(
                                 0,
                             ),
                         },
-                    ),
-                },
-            ),
-        ),
-        Expression(
-            Identifier(
-                "baz",
-                Span {
-                    start: Position {
-                        offset: 10,
-                        line: 2,
-                        column: 0,
-                    },
-                    end: Position {
-                        offset: 13,
-                        line: 2,
-                        column: 3,
-                    },
-                    file: FileId(
-                        0,
                     ),
                 },
             ),
