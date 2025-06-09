@@ -287,6 +287,17 @@ impl<'a> Parser<'a> {
         })
     }
 
+    fn parse_float(&mut self) -> Result<Expression, CompilationError<'a>> {
+        self.next_token().map(|t| {
+            let sf = self.source_file.borrow();
+            let float_literal = sf.span_text(&t.span);
+            Expression::NumericLiteral(
+                NumericLiteral::Float(float_literal.parse().expect("Lexer failed")),
+                t.span,
+            )
+        })
+    }
+
     fn parse_identifier(&mut self) -> Result<Expression, CompilationError<'a>> {
         self.next_token().map(|t| {
             Expression::Identifier(
@@ -318,6 +329,42 @@ impl<'a> Parser<'a> {
             Box::new(grouped_expression),
             Span::from_spans(l_paren_token.span, grouped_expression_span),
         ))
+    }
+
+    fn parse_function_call(
+        &mut self,
+        func_identifier: Expression,
+    ) -> Result<Expression, CompilationError<'a>> {
+        let func_ident_span = func_identifier.span();
+        let params = self.parse_expression_list()?;
+        Ok(Expression::FunctionCall(
+            Box::new(func_identifier),
+            params,
+            func_ident_span,
+        ))
+    }
+
+    fn parse_expression_list(&mut self) -> Result<Vec<Expression>, CompilationError<'a>> {
+        let mut expr_list = vec![];
+        self.expect_and_next(TokenKind::LParen)?;
+        if self.match_peek_token_kind(TokenKind::RParen)? {
+            self.lexer.next();
+            return Ok(expr_list);
+        }
+
+        loop {
+            let expr = self.parse_expression(Precedence::Lowest)?;
+            expr_list.push(expr);
+
+            if !self.match_peek_token_kind(TokenKind::Comma)? {
+                break;
+            }
+            //skip comma
+            self.lexer.next();
+        }
+        self.expect_and_next(TokenKind::RParen)?;
+
+        Ok(expr_list)
     }
 
     fn parse_infix_expression(
@@ -359,6 +406,7 @@ impl<'a> Parser<'a> {
         let next_token = self.peek_token()?;
         match next_token.kind {
             TokenKind::Integer => self.parse_integer(),
+            TokenKind::Float => self.parse_float(),
             TokenKind::Identifier => self.parse_identifier(),
             TokenKind::LParen => self.parse_grouped_expression(),
             TokenKind::KWTrue | TokenKind::KWFalse => self.parse_boolean(),
@@ -390,6 +438,7 @@ impl<'a> Parser<'a> {
             | TokenKind::LessEqual
             | TokenKind::Greater
             | TokenKind::GreaterEqual => self.parse_infix_expression(left),
+            TokenKind::LParen => self.parse_function_call(left),
             otherwise => Err(CompilationError::ParserError(
                 ParserError::unknow_operator_in_expression(
                     otherwise,

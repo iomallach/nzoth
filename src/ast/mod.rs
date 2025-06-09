@@ -105,6 +105,7 @@ pub enum Expression {
     Prefix(PrefixOp, Box<Expression>, Span),
     Infix(Box<Expression>, InfixOp, Box<Expression>, Span),
     Grouped(Box<Expression>, Span),
+    FunctionCall(Box<Expression>, Vec<Expression>, Span),
 }
 
 impl Expression {
@@ -116,6 +117,7 @@ impl Expression {
             Expression::Infix(_, _, _, span) => span.clone(),
             Expression::Identifier(_, span) => span.clone(),
             Expression::Grouped(_, span) => span.clone(),
+            Expression::FunctionCall(_, _, span) => span.clone(),
         }
     }
 }
@@ -123,6 +125,7 @@ impl Expression {
 #[derive(Debug)]
 pub enum NumericLiteral {
     Integer(i64),
+    Float(f64),
 }
 
 #[derive(Debug, PartialEq, Eq)]

@@ -4,6 +4,7 @@ pub type TypeId = usize;
 
 pub const INT_TYPE_ID: TypeId = 0;
 pub const BOOL_TYPE_ID: TypeId = 1;
+pub const FLOAT_TYPE_ID: TypeId = 2;
 
 pub enum CheckedStatement {
     LetVarDeclaration(CheckedLetVarDeclaration),
@@ -85,6 +86,7 @@ pub enum BuiltInType {
 #[derive(Clone)]
 pub enum CheckedNumericLiteral {
     Integer(i64),
+    Float(f64),
 }
 
 #[derive(Clone)]

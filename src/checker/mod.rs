@@ -1,7 +1,7 @@
 use checked_ir::{
     BOOL_TYPE_ID, BuiltInType, CheckedExpression, CheckedLetFuncDeclaration,
-    CheckedLetVarDeclaration, CheckedNumericLiteral, CheckedStatement, CheckedType, INT_TYPE_ID,
-    TypeId,
+    CheckedLetVarDeclaration, CheckedNumericLiteral, CheckedStatement, CheckedType, FLOAT_TYPE_ID,
+    INT_TYPE_ID, TypeId,
 };
 
 use crate::ast::{AstNode, Expression, LetDeclaration, NumericLiteral, Program, Statement, Type};
@@ -163,6 +163,7 @@ impl Checker {
         match ty {
             Type::Name(name) => match name.as_str() {
                 "int" => INT_TYPE_ID,
+                "float" => FLOAT_TYPE_ID,
                 "bool" => BOOL_TYPE_ID,
                 _ => todo!("handle unknown types"),
             },
@@ -175,6 +176,11 @@ impl Checker {
                 NumericLiteral::Integer(val) => CheckedExpression::NumericLiteral(
                     CheckedNumericLiteral::Integer(*val),
                     INT_TYPE_ID,
+                    *span,
+                ),
+                NumericLiteral::Float(val) => CheckedExpression::NumericLiteral(
+                    CheckedNumericLiteral::Float(*val),
+                    FLOAT_TYPE_ID,
                     *span,
                 ),
             },
@@ -190,6 +196,7 @@ impl Checker {
             Expression::Prefix(_, _, _) => todo!(),
             Expression::Infix(_, _, _, _) => todo!(),
             Expression::Grouped(_, _) => todo!(),
+            Expression::FunctionCall(_, _, _) => todo!(),
         }
     }
 }

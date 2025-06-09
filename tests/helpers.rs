@@ -135,4 +135,12 @@ impl<'a> Visitor for SnapshotVisitor<'a> {
     fn visit_return(&mut self, ret: &nzoth::ast::Return) -> Self::Output {
         todo!()
     }
+
+    fn visit_function_call(
+        &mut self,
+        ident_expr: &nzoth::ast::Expression,
+        expr_list: &Vec<nzoth::ast::Expression>,
+    ) -> Self::Output {
+        todo!()
+    }
 }

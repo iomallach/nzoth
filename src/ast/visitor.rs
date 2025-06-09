@@ -24,6 +24,11 @@ pub trait Visitor {
     fn visit_prefix(&mut self, op: &PrefixOp, expr: &Expression) -> Self::Output;
     fn visit_infix(&mut self, left: &Expression, op: &InfixOp, right: &Expression) -> Self::Output;
     fn visit_grouped_expression(&mut self, expr: &Expression) -> Self::Output;
+    fn visit_function_call(
+        &mut self,
+        ident_expr: &Expression,
+        expr_list: &Vec<Expression>,
+    ) -> Self::Output;
 }
 
 pub struct UnparsePrinter;
@@ -132,12 +137,14 @@ impl Visitor for UnparsePrinter {
             Expression::Prefix(op, expr, _) => self.visit_prefix(op, expr),
             Expression::Infix(left, op, right, _) => self.visit_infix(left, op, right),
             Expression::Grouped(expr, _) => self.visit_grouped_expression(expr),
+            Expression::FunctionCall(ident, params, _) => self.visit_function_call(ident, params),
         }
     }
 
     fn visit_numeric_literal(&mut self, lit: &NumericLiteral) -> Self::Output {
         match lit {
             NumericLiteral::Integer(i) => format!("{i}"),
+            NumericLiteral::Float(f) => format!("{f}"),
         }
     }
 
@@ -163,5 +170,19 @@ impl Visitor for UnparsePrinter {
 
     fn visit_grouped_expression(&mut self, expr: &Expression) -> Self::Output {
         format!("{}", self.visit_expression_node(expr))
+    }
+
+    fn visit_function_call(
+        &mut self,
+        ident_expr: &Expression,
+        expr_list: &Vec<Expression>,
+    ) -> Self::Output {
+        let mut out = format!("{}", self.visit_expression_node(ident_expr));
+        out.push_str("(");
+        for expr in expr_list {
+            out.push_str(format!("{},", self.visit_expression_node(expr)).as_str());
+        }
+        out.push_str(")");
+        out
     }
 }
