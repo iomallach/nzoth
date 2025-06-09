@@ -1,4 +1,4 @@
-use crate::source::Span;
+use crate::{ast::{InfixOp, PrefixOp}, source::Span};
 
 pub type TypeId = usize;
 
@@ -78,9 +78,49 @@ pub enum CheckedType {
     BuiltIn(BuiltInType),
 }
 
+impl CheckedType {
+    pub fn is_numeric(&self) -> bool {
+        match self {
+            Self::BuiltIn(bi) => bi.is_numeric()
+        }
+    }
+    pub fn is_bool(&self) -> bool {
+        match self {
+            Self::BuiltIn(bi) => bi.is_bool()
+        }
+    }
+
+    pub fn is_builtin(&self) -> bool {
+        if let Self::BuiltIn(_) = self {
+            true
+        } else {
+            false
+        }
+    }
+}
+
 pub enum BuiltInType {
     Int,
+    Float,
     Bool,
+}
+
+impl BuiltInType {
+    pub fn is_numeric(&self) -> bool {
+        match self {
+            Self::Int => true,
+            Self::Float => true,
+            Self::Bool => false,
+        }
+    }
+
+    pub fn is_bool(&self) -> bool {
+        match self {
+            Self::Int => false,
+            Self::Float => false,
+            Self::Bool => true,
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -93,6 +133,15 @@ pub enum CheckedNumericLiteral {
 pub enum CheckedPrefixOp {
     Negation,
     Not,
+}
+
+impl From<PrefixOp> for CheckedPrefixOp {
+    fn from(value: PrefixOp) -> Self {
+        match value {
+            PrefixOp::BoolNegation => Self::Not,
+            PrefixOp::Negation => Self::Negation,
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -108,4 +157,22 @@ pub enum CheckedInfixOp {
     LessThanEquals,
     GreaterThan,
     GreaterThanEquals,
+}
+
+impl From<InfixOp> for CheckedInfixOp {
+    fn from(value: InfixOp) -> Self {
+        match value {
+            InfixOp::Add => Self::Add
+            InfixOp::Assignment => Self::Assignment,
+            InfixOp::Subtract => Self::Subtract,
+            InfixOp::Multiply => Self::Multiply,
+            InfixOp::Divide => Self::Divide,
+            InfixOp::Equals => Self::Equals,
+            InfixOp::NotEquals => Self::NotEquals,
+            InfixOp::LessThan => Self::LessThan,
+            InfixOp::LessThanEquals => Self::LessThanEquals,
+            InfixOp::GreaterThan => Self::GreaterThan,
+            InfixOp::GreaterThanEquals => Self::GreaterThanEquals,
+        }
+    }
 }

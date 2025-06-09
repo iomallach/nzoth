@@ -25,3 +25,4 @@ foo(5 + 5, !baz);
 foo() + bar(baz);
 foo() + bar(baz, foo(5 + 5));
 5.4 + foo();
+foo(5.1, (1 > 5 * 3))

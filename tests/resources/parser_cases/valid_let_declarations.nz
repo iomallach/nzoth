@@ -1,2 +1,3 @@
 let foo = 1;
 let foo :: int = 1;
+let bar = foo(12.3, q + 4);
