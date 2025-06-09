@@ -141,7 +141,7 @@ impl Display for Type {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum PrefixOp {
     Negation,
     BoolNegation,
@@ -166,7 +166,7 @@ impl From<&str> for PrefixOp {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum InfixOp {
     Add,
     Assignment,

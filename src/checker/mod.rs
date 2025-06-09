@@ -1,7 +1,7 @@
 use checked_ir::{
-    BOOL_TYPE_ID, BuiltInType, CheckedExpression, CheckedLetFuncDeclaration,
-    CheckedLetVarDeclaration, CheckedNumericLiteral, CheckedStatement, CheckedType, FLOAT_TYPE_ID,
-    INT_TYPE_ID, TypeId,
+    BOOL_TYPE_ID, BuiltInType, CheckedExpression, CheckedInfixOp, CheckedLetFuncDeclaration,
+    CheckedLetVarDeclaration, CheckedNumericLiteral, CheckedPrefixOp, CheckedStatement,
+    CheckedType, FLOAT_TYPE_ID, INT_TYPE_ID, TypeId,
 };
 
 use crate::ast::{AstNode, Expression, LetDeclaration, NumericLiteral, Program, Statement, Type};
@@ -120,8 +120,10 @@ impl Checker {
 
     pub fn typecheck_node(&mut self, ast_node: &AstNode) -> CheckedStatement {
         match ast_node {
-            AstNode::Statement(stmt) => todo!(),
-            AstNode::Expression(expr) => todo!(),
+            AstNode::Statement(stmt) => self.typecheck_statement(stmt),
+            AstNode::Expression(expr) => {
+                CheckedStatement::Expression(self.typecheck_expression(expr))
+            }
             AstNode::EndOfProgram => CheckedStatement::EndOfProgram,
         }
     }
@@ -193,8 +195,119 @@ impl Checker {
                 let checked_type_id = checked_let_decl.ty;
                 CheckedExpression::Variable(checked_let_decl, checked_type_id, *span)
             }
-            Expression::Prefix(_, _, _) => todo!(),
-            Expression::Infix(_, _, _, _) => todo!(),
+            Expression::Prefix(op, expr, span) => {
+                let checked_expr = self.typecheck_expression(expr);
+                let checked_expr_type = self.comp_unit.find_type_by_id(checked_expr.type_id());
+                let checked_prefix_op = CheckedPrefixOp::from(*op);
+
+                match (&checked_prefix_op, checked_expr_type) {
+                    (CheckedPrefixOp::Not, CheckedType::BuiltIn(BuiltInType::Bool)) => {
+                        CheckedExpression::Prefix(
+                            checked_prefix_op,
+                            Box::new(checked_expr),
+                            BOOL_TYPE_ID,
+                            *span,
+                        )
+                    }
+                    (CheckedPrefixOp::Negation, CheckedType::BuiltIn(BuiltInType::Int)) => {
+                        CheckedExpression::Prefix(
+                            checked_prefix_op,
+                            Box::new(checked_expr),
+                            INT_TYPE_ID,
+                            *span,
+                        )
+                    }
+                    (CheckedPrefixOp::Negation, CheckedType::BuiltIn(BuiltInType::Float)) => {
+                        CheckedExpression::Prefix(
+                            checked_prefix_op,
+                            Box::new(checked_expr),
+                            FLOAT_TYPE_ID,
+                            *span,
+                        )
+                    }
+                    _ => todo!("Handle these cases"),
+                }
+            }
+            Expression::Infix(left, op, right, span) => {
+                let checked_left_expr = self.typecheck_expression(left);
+                let checked_right_expr = self.typecheck_expression(right);
+                let checked_infix_op = CheckedInfixOp::from(*op);
+
+                let left_type_id = checked_left_expr.type_id();
+                let right_type_id = checked_right_expr.type_id();
+                let left_type = self.comp_unit.find_type_by_id(left_type_id);
+                let right_type = self.comp_unit.find_type_by_id(right_type_id);
+
+                match checked_infix_op {
+                    CheckedInfixOp::Add
+                    | CheckedInfixOp::Subtract
+                    | CheckedInfixOp::Multiply
+                    | CheckedInfixOp::Divide => {
+                        if left_type.is_numeric()
+                            && right_type.is_numeric()
+                            && left_type_id == right_type_id
+                        {
+                            CheckedExpression::Infix(
+                                Box::new(checked_left_expr),
+                                checked_infix_op,
+                                Box::new(checked_right_expr),
+                                left_type_id,
+                                *span,
+                            )
+                        } else {
+                            todo!("Handle these cases")
+                        }
+                    }
+                    CheckedInfixOp::LessThan
+                    | CheckedInfixOp::LessThanEquals
+                    | CheckedInfixOp::GreaterThan
+                    | CheckedInfixOp::GreaterThanEquals => {
+                        if left_type.is_numeric()
+                            && right_type.is_numeric()
+                            && left_type_id == right_type_id
+                        {
+                            CheckedExpression::Infix(
+                                Box::new(checked_left_expr),
+                                checked_infix_op,
+                                Box::new(checked_right_expr),
+                                BOOL_TYPE_ID,
+                                *span,
+                            )
+                        } else {
+                            todo!("Handle these cases")
+                        }
+                    }
+                    CheckedInfixOp::Assignment => {
+                        if left_type_id == right_type_id {
+                            CheckedExpression::Infix(
+                                Box::new(checked_left_expr),
+                                checked_infix_op,
+                                Box::new(checked_right_expr),
+                                left_type_id,
+                                *span,
+                            )
+                        } else {
+                            todo!("Handle these cases")
+                        }
+                    }
+                    CheckedInfixOp::Equals | CheckedInfixOp::NotEquals => {
+                        if left_type.is_builtin()
+                            && right_type.is_builtin()
+                            && left_type_id == right_type_id
+                        {
+                            CheckedExpression::Infix(
+                                Box::new(checked_left_expr),
+                                checked_infix_op,
+                                Box::new(checked_right_expr),
+                                BOOL_TYPE_ID,
+                                *span,
+                            )
+                        } else {
+                            todo!("Handle these cases")
+                        }
+                    }
+                }
+            }
             Expression::Grouped(_, _) => todo!(),
             Expression::FunctionCall(_, _, _) => todo!(),
         }
