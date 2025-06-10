@@ -1,11 +1,10 @@
 use checked_ir::{
-    BOOL_TYPE_ID, BuiltInType, CheckedBlock, CheckedExpression, CheckedInfixOp,
-    CheckedLetFuncDeclaration, CheckedLetVarDeclaration, CheckedNumericLiteral, CheckedPrefixOp,
-    CheckedStatement, CheckedType, FLOAT_TYPE_ID, INT_TYPE_ID, TypeId,
+    BuiltInType, CheckedBlock, CheckedExpression, CheckedFunctionBody, CheckedInfixOp, CheckedLetFuncDeclaration, CheckedLetVarDeclaration, CheckedNumericLiteral, CheckedPrefixOp, CheckedStatement, CheckedType, TypeId, BOOL_TYPE_ID, FLOAT_TYPE_ID, INT_TYPE_ID
 };
 
 use crate::ast::{
-    AstNode, Block, Expression, LetDeclaration, NumericLiteral, Program, Statement, Type,
+    AstNode, Block, Expression, FuncDeclaration, FuncParameter, LetDeclaration, NumericLiteral,
+    Program, Statement, Type,
 };
 
 pub mod checked_ir;
@@ -25,6 +24,7 @@ impl CompilationUnit {
         let mut types = vec![];
         types.push(CheckedType::BuiltIn(BuiltInType::Int));
         types.push(CheckedType::BuiltIn(BuiltInType::Bool));
+        types.push(CheckedType::BuiltIn(BuiltInType::Float));
 
         Self {
             scopes,
@@ -46,6 +46,14 @@ impl CompilationUnit {
 
     pub fn find_type_by_id(&self, type_id: TypeId) -> &CheckedType {
         &self.types[type_id]
+    }
+
+    pub fn add_let_func_decl_to_scope(
+        &mut self,
+        scope_id: ScopeId,
+        decl: CheckedLetFuncDeclaration,
+    ) {
+        self.scopes.get_mut(scope_id).map(|s| s.add_func_decl(decl));
     }
 
     pub fn add_let_var_decl_to_scope(&mut self, scope_id: ScopeId, decl: CheckedLetVarDeclaration) {
@@ -70,6 +78,16 @@ impl CompilationUnit {
 
         None
     }
+
+    pub fn create_scope(&mut self, parent: Option<ScopeId>) -> ScopeId {
+        self.scopes.push(Scope::new(self.scopes.len(), parent));
+
+        self.scopes.len() - 1
+    }
+
+    pub fn current_scope(&self) -> &Scope {
+        self.scopes.get(self.current_scope).expect("There is always at least root scope")
+    }
 }
 
 pub struct Scope {
@@ -93,6 +111,10 @@ impl Scope {
 
     pub fn add_var_decl(&mut self, decl: CheckedLetVarDeclaration) {
         self.var_decls.push(decl);
+    }
+
+    pub fn add_func_decl(&mut self, decl: CheckedLetFuncDeclaration) {
+        self.functions.push(decl);
     }
 }
 
@@ -338,5 +360,46 @@ impl Checker {
             },
             span: block.span,
         }
+    }
+
+    fn typecheck_func_declaration(&mut self, decl: &FuncDeclaration) -> CheckedLetFuncDeclaration {
+        // save decl
+        let checked_params = self.typecheck_function_parameters(&decl.paramemetrs);
+        //TODO: enter scope -- inside block actually
+        let checked_body_block = self.typecheck_block(&decl.body);
+        let checked_func_body = self.typecheck_func_body_block(checked_body_block);
+        let checked_return_type = decl.return_type.as_ref().map(|t| self.typecheck_typename(t));
+        let return_type = self.typecheck_func_return_type(
+            checked_func_body.statements.last(),
+            checked_return_type,
+        );
+        //TODO: leave scope -- inside block actually
+        let checked_decl = CheckedLetFuncDeclaration {
+            name: decl.identifier.clone(),
+            parameters: checked_params,
+            body: checked_func_body,
+            return_type,
+            span: todo!(),
+        }
+    }
+
+    fn typecheck_function_parameters(
+        &mut self,
+        params: &Vec<FuncParameter>,
+    ) -> Vec<CheckedLetVarDeclaration> {
+        
+        todo!()
+    }
+
+    fn typecheck_func_body_block(&mut self, block: CheckedBlock) -> CheckedFunctionBody {
+        todo!()
+    }
+
+    fn typecheck_func_return_type(
+        &mut self,
+        last_block_statement: Option<&CheckedStatement>,
+        ret_type: Option<TypeId>,
+    ) -> TypeId {
+        todo!()
     }
 }
