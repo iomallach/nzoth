@@ -1,5 +1,3 @@
-pub mod visitor;
-
 use std::{
     fmt::Display,
     ops::{Deref, DerefMut},
@@ -9,11 +7,11 @@ use crate::{source::Span, token::TokenKind};
 
 #[derive(Debug)]
 pub struct Program {
-    pub nodes: Vec<AstNode>,
+    pub nodes: Vec<Node>,
 }
 
 impl Deref for Program {
-    type Target = Vec<AstNode>;
+    type Target = Vec<Node>;
 
     fn deref(&self) -> &Self::Target {
         &self.nodes
@@ -26,32 +24,40 @@ impl DerefMut for Program {
     }
 }
 
-impl Program {
-    pub fn push(&mut self, node: AstNode) {
-        self.nodes.push(node);
-    }
+#[derive(Debug)]
+pub enum Node {
+    ImportDeclaration, //not implemented
+    FunctionDeclaration(FuncDeclaration),
+    ConstDeclaration,  //not implemented
+    StaticDeclaration, //not implemented
 }
 
 #[derive(Debug)]
-pub enum AstNode {
-    Statement(Statement),
-    Expression(Expression),
-    EndOfProgram,
+pub struct FuncDeclaration {
+    pub identifier: String,
+    pub paramemetrs: Vec<FuncParameter>,
+    pub body: Block,
+    pub return_type: Option<Type>,
+    pub span: Span,
+}
+
+#[derive(Debug)]
+pub struct Block {
+    pub nodes: Vec<Statement>,
+    pub last_expression: Option<Box<ExpressionStatement>>,
+    pub span: Span,
 }
 
 #[derive(Debug)]
 pub enum Statement {
+    Node(Node),
     LetDeclaration(LetDeclaration),
     Expression(ExpressionStatement),
-    Block(Block),
-    FuncDeclaration(FuncDeclaration),
     Return(Return),
-    //function declaration
     //if statement
     //while loop statement
     //for loop statement
     //assignment??? now is an expression
-    //import statement here or top level node
 }
 
 #[derive(Debug)]
@@ -66,22 +72,6 @@ pub struct LetDeclaration {
 pub struct ExpressionStatement {
     pub span: Span,
     pub expression: Expression,
-}
-
-#[derive(Debug)]
-pub struct Block {
-    pub nodes: Vec<AstNode>,
-    pub last_expression: Option<Box<AstNode>>,
-    pub span: Span,
-}
-
-#[derive(Debug)]
-pub struct FuncDeclaration {
-    pub identifier: String,
-    pub paramemetrs: Vec<FuncParameter>,
-    pub body: Block,
-    pub return_type: Option<Type>,
-    pub span: Span,
 }
 
 #[derive(Debug)]

@@ -1,40 +1,51 @@
+use std::collections::HashMap;
+
 use checked_ir::{
-    BuiltInType, CheckedBlock, CheckedExpression, CheckedFunctionBody, CheckedInfixOp, CheckedLetFuncDeclaration, CheckedLetVarDeclaration, CheckedNumericLiteral, CheckedPrefixOp, CheckedStatement, CheckedType, TypeId, BOOL_TYPE_ID, FLOAT_TYPE_ID, INT_TYPE_ID
+    BOOL_TYPE_ID, BuiltInType, CheckedBlock, CheckedExpression, CheckedFuncDeclaration,
+    CheckedFunctionBody, CheckedInfixOp, CheckedLetVarDeclaration, CheckedNode,
+    CheckedNumericLiteral, CheckedPrefixOp, CheckedReturn, CheckedStatement, CheckedType,
+    FLOAT_TYPE_ID, INT_TYPE_ID, TypeId,
 };
 
 use crate::ast::{
-    AstNode, Block, Expression, FuncDeclaration, FuncParameter, LetDeclaration, NumericLiteral,
+    Block, Expression, FuncDeclaration, FuncParameter, LetDeclaration, Node, NumericLiteral,
     Program, Statement, Type,
 };
 
 pub mod checked_ir;
 
-type ScopeId = usize;
-
 pub struct CompilationUnit {
-    scopes: Vec<Scope>,
-    functions: Vec<CheckedLetFuncDeclaration>,
-    current_scope: ScopeId,
+    scope: Scope,
+    functions: Vec<CheckedFuncDeclaration>,
     types: Vec<CheckedType>,
 }
 
 impl CompilationUnit {
     pub fn new() -> Self {
-        let scopes = vec![Scope::new(0, None)];
         let mut types = vec![];
         types.push(CheckedType::BuiltIn(BuiltInType::Int));
         types.push(CheckedType::BuiltIn(BuiltInType::Bool));
         types.push(CheckedType::BuiltIn(BuiltInType::Float));
 
         Self {
-            scopes,
+            scope: Scope::new(None),
             functions: vec![],
-            current_scope: 0,
             types,
         }
     }
 
-    pub fn add_function(&mut self, function: CheckedLetFuncDeclaration) {
+    pub fn enter_scope(&mut self) {
+        let old_scope = std::mem::take(&mut self.scope);
+        self.scope = Scope::new(Some(old_scope));
+    }
+
+    pub fn exit_scope(&mut self) {
+        let current_scope = std::mem::take(&mut self.scope);
+        let parent_scope = current_scope.parent.expect("Never exit the root scope");
+        self.scope = *parent_scope;
+    }
+
+    pub fn add_function(&mut self, function: CheckedFuncDeclaration) {
         self.functions.push(function);
     }
 
@@ -48,73 +59,73 @@ impl CompilationUnit {
         &self.types[type_id]
     }
 
-    pub fn add_let_func_decl_to_scope(
-        &mut self,
-        scope_id: ScopeId,
-        decl: CheckedLetFuncDeclaration,
-    ) {
-        self.scopes.get_mut(scope_id).map(|s| s.add_func_decl(decl));
+    pub fn add_let_func_decl_to_scope(&mut self, decl: CheckedFuncDeclaration) {
+        self.scope.add_func_decl(decl);
     }
 
-    pub fn add_let_var_decl_to_scope(&mut self, scope_id: ScopeId, decl: CheckedLetVarDeclaration) {
-        self.scopes.get_mut(scope_id).map(|s| s.add_var_decl(decl));
+    pub fn add_let_var_decl_to_scope(&mut self, decl: CheckedLetVarDeclaration) {
+        self.scope.add_var_decl(decl);
     }
 
-    pub fn find_let_var_decl_in_scope(
-        &self,
-        scope_id: ScopeId,
-        name: &str,
-    ) -> Option<CheckedLetVarDeclaration> {
-        let mut scope_id = Some(scope_id);
-
-        while let Some(yas) = scope_id {
-            let scope = &self.scopes[yas];
-            let maybe_pos = scope.var_decls.iter().position(|vd| vd.name == name);
-            if let Some(pos) = maybe_pos {
-                return Some(scope.var_decls[pos].clone());
-            }
-            scope_id = scope.parent;
-        }
-
-        None
+    pub fn find_let_var_decl_in_scope(&self, name: &str) -> Option<CheckedLetVarDeclaration> {
+        self.scope.lookup_var_decl(name)
     }
 
-    pub fn create_scope(&mut self, parent: Option<ScopeId>) -> ScopeId {
-        self.scopes.push(Scope::new(self.scopes.len(), parent));
-
-        self.scopes.len() - 1
+    pub fn find_func_decl_in_scope(&self, name: &str) -> Option<CheckedFuncDeclaration> {
+        self.scope.lookup_func_decl(name)
     }
 
-    pub fn current_scope(&self) -> &Scope {
-        self.scopes.get(self.current_scope).expect("There is always at least root scope")
+    //TODO: this is incorrect, it would count being inside a block scope as being inside a function
+    pub fn is_inside_function(&self) -> bool {
+        self.scope.parent.is_some()
     }
 }
 
 pub struct Scope {
-    id: ScopeId,
-    parent: Option<ScopeId>,
-    functions: Vec<CheckedLetFuncDeclaration>,
-    var_decls: Vec<CheckedLetVarDeclaration>,
+    parent: Option<Box<Scope>>,
+    functions: HashMap<String, CheckedFuncDeclaration>,
+    var_decls: HashMap<String, CheckedLetVarDeclaration>,
     //imports,
     //types,
 }
 
+impl Default for Scope {
+    fn default() -> Self {
+        Self::new(None)
+    }
+}
+
 impl Scope {
-    pub fn new(id: ScopeId, parent: Option<ScopeId>) -> Self {
+    pub fn new(parent: Option<Scope>) -> Self {
         Self {
-            id,
-            parent,
-            functions: vec![],
-            var_decls: vec![],
+            parent: parent.map(|p| Box::new(p)),
+            functions: HashMap::new(),
+            var_decls: HashMap::new(),
         }
     }
 
-    pub fn add_var_decl(&mut self, decl: CheckedLetVarDeclaration) {
-        self.var_decls.push(decl);
+    pub fn lookup_var_decl(&self, name: &str) -> Option<CheckedLetVarDeclaration> {
+        self.var_decls
+            .get(name)
+            .cloned()
+            .or_else(|| self.parent.as_ref()?.lookup_var_decl(name))
     }
 
-    pub fn add_func_decl(&mut self, decl: CheckedLetFuncDeclaration) {
-        self.functions.push(decl);
+    pub fn lookup_func_decl(&self, name: &str) -> Option<CheckedFuncDeclaration> {
+        self.functions
+            .get(name)
+            .cloned()
+            .or_else(|| self.parent.as_ref()?.lookup_func_decl(name))
+    }
+
+    pub fn add_var_decl(&mut self, decl: CheckedLetVarDeclaration) {
+        //TODO: handle redefinition
+        self.var_decls.insert(decl.name.clone(), decl);
+    }
+
+    pub fn add_func_decl(&mut self, decl: CheckedFuncDeclaration) {
+        //TODO: handle redefinition
+        self.functions.insert(decl.name.clone(), decl);
     }
 }
 
@@ -132,41 +143,42 @@ impl Checker {
     pub fn typecheck_program(&mut self, program: Program) {
         for node in program.nodes {
             match self.typecheck_node(&node) {
-                CheckedStatement::LetFuncDeclaration(fd) => {
+                CheckedNode::FunctionDeclaration(fd) => {
                     self.comp_unit.add_function(fd);
                 }
-                _ => unreachable!(
-                    "Top level statements other than function declarations are not allowed"
-                ),
             }
         }
     }
 
-    pub fn typecheck_node(&mut self, ast_node: &AstNode) -> CheckedStatement {
-        match ast_node {
-            AstNode::Statement(stmt) => self.typecheck_statement(stmt),
-            AstNode::Expression(expr) => {
-                CheckedStatement::Expression(self.typecheck_expression(expr))
+    pub fn typecheck_node(&mut self, node: &Node) -> CheckedNode {
+        match node {
+            Node::FunctionDeclaration(fd) => {
+                CheckedNode::FunctionDeclaration(self.typecheck_func_declaration(fd))
             }
-            AstNode::EndOfProgram => CheckedStatement::EndOfProgram,
+            Node::ImportDeclaration | Node::StaticDeclaration | Node::ConstDeclaration => {
+                todo!("not implemented")
+            }
         }
     }
 
     pub fn typecheck_statement(&mut self, stmt: &Statement) -> CheckedStatement {
         match stmt {
-            Statement::LetDeclaration(ld) => {
-                CheckedStatement::LetVarDeclaration(self.typecheck_let_declaration(ld))
-            }
+            Statement::Node(node) => CheckedStatement::Node(self.typecheck_node(node)),
             Statement::Expression(expr_stmt) => {
                 CheckedStatement::Expression(self.typecheck_expression(&expr_stmt.expression))
             }
-            Statement::Block(block) => CheckedStatement::Block(self.typecheck_block(block)),
-            Statement::FuncDeclaration(_) => todo!(),
+            Statement::LetDeclaration(ld) => {
+                let (decl, expr) = self.typecheck_let_declaration(ld);
+                CheckedStatement::CheckedLetVarDeclaration(decl, expr)
+            }
             Statement::Return(_) => todo!(),
         }
     }
 
-    pub fn typecheck_let_declaration(&mut self, decl: &LetDeclaration) -> CheckedLetVarDeclaration {
+    pub fn typecheck_let_declaration(
+        &mut self,
+        decl: &LetDeclaration,
+    ) -> (CheckedLetVarDeclaration, CheckedExpression) {
         let checked_expr = self.typecheck_expression(&decl.expression);
 
         if decl.ty.is_some()
@@ -178,13 +190,12 @@ impl Checker {
         let checked_decl = CheckedLetVarDeclaration {
             name: decl.identifier.clone(),
             ty: checked_expr.type_id(),
-            initializer: Box::new(checked_expr),
             span: decl.span,
         };
         self.comp_unit
-            .add_let_var_decl_to_scope(self.comp_unit.current_scope, checked_decl.clone());
+            .add_let_var_decl_to_scope(checked_decl.clone());
 
-        checked_decl
+        (checked_decl, checked_expr)
     }
 
     pub fn typecheck_typename(&mut self, ty: &Type) -> TypeId {
@@ -216,7 +227,7 @@ impl Checker {
             Expression::Identifier(name, span) => {
                 let checked_let_decl = self
                     .comp_unit
-                    .find_let_var_decl_in_scope(self.comp_unit.current_scope, name)
+                    .find_let_var_decl_in_scope(name)
                     .expect("Might actually panic, needs handling");
                 let checked_type_id = checked_let_decl.ty;
                 CheckedExpression::Variable(checked_let_decl, checked_type_id, *span)
@@ -343,63 +354,119 @@ impl Checker {
         let mut checked_nodes = vec![];
         let mut checked_last_expr = None;
         for node in &block.nodes {
-            checked_nodes.push(self.typecheck_node(node));
+            checked_nodes.push(self.typecheck_statement(node));
         }
 
-        if let Some(node) = &block.last_expression {
-            checked_last_expr = Some(self.typecheck_node(node));
+        if let Some(expr_stmt) = &block.last_expression {
+            checked_last_expr = Some(self.typecheck_expression(&expr_stmt.expression));
         }
 
         CheckedBlock {
             statements: checked_nodes,
-            trailing_expression: if let Some(CheckedStatement::Expression(expr)) = checked_last_expr
-            {
-                Some(expr)
-            } else {
-                None
-            },
+            trailing_expression: checked_last_expr,
             span: block.span,
         }
     }
 
-    fn typecheck_func_declaration(&mut self, decl: &FuncDeclaration) -> CheckedLetFuncDeclaration {
+    fn typecheck_func_declaration(&mut self, decl: &FuncDeclaration) -> CheckedFuncDeclaration {
         // save decl
+        self.comp_unit.enter_scope();
+
         let checked_params = self.typecheck_function_parameters(&decl.paramemetrs);
-        //TODO: enter scope -- inside block actually
         let checked_body_block = self.typecheck_block(&decl.body);
         let checked_func_body = self.typecheck_func_body_block(checked_body_block);
-        let checked_return_type = decl.return_type.as_ref().map(|t| self.typecheck_typename(t));
-        let return_type = self.typecheck_func_return_type(
-            checked_func_body.statements.last(),
-            checked_return_type,
-        );
-        //TODO: leave scope -- inside block actually
-        let checked_decl = CheckedLetFuncDeclaration {
+        let checked_return_type = decl
+            .return_type
+            .as_ref()
+            .map(|t| self.typecheck_typename(t));
+        let return_type = match checked_func_body.statements.last().expect("Never empty") {
+            CheckedStatement::Return(ret) => {
+                self.typecheck_func_return_type(ret, checked_return_type)
+            }
+            _ => unreachable!("Function body always ends with a return even if it is empty"),
+        };
+
+        self.comp_unit.exit_scope();
+
+        let checked_decl = CheckedFuncDeclaration {
             name: decl.identifier.clone(),
             parameters: checked_params,
             body: checked_func_body,
             return_type,
-            span: todo!(),
-        }
+            span: decl.span,
+        };
+
+        self.comp_unit
+            .add_let_func_decl_to_scope(checked_decl.clone());
+
+        checked_decl
     }
 
     fn typecheck_function_parameters(
         &mut self,
         params: &Vec<FuncParameter>,
     ) -> Vec<CheckedLetVarDeclaration> {
-        
-        todo!()
+        let mut checked_params = vec![];
+        for param in params {
+            let checked_parameter = CheckedLetVarDeclaration {
+                name: param.identifier.clone(),
+                ty: self.typecheck_typename(&param.ty),
+                span: param.span,
+            };
+            self.comp_unit
+                .add_let_var_decl_to_scope(checked_parameter.clone());
+            checked_params.push(checked_parameter);
+        }
+
+        checked_params
     }
 
     fn typecheck_func_body_block(&mut self, block: CheckedBlock) -> CheckedFunctionBody {
-        todo!()
+        let mut body_statements = vec![];
+
+        for stmt in block.statements {
+            body_statements.push(stmt);
+        }
+
+        let is_last_statement_return =
+            if let Some(CheckedStatement::Return(_)) = body_statements.last() {
+                true
+            } else {
+                false
+            };
+
+        if is_last_statement_return {
+            return CheckedFunctionBody {
+                statements: body_statements,
+                span: block.span,
+            };
+        } else if let Some(expr) = block.trailing_expression {
+            body_statements.push(CheckedStatement::Return(CheckedReturn {
+                span: expr.span(),
+                expression: expr,
+            }));
+        } else {
+            todo!("Implicit unit return not implemented")
+        }
+
+        CheckedFunctionBody {
+            statements: body_statements,
+            span: block.span,
+        }
     }
 
     fn typecheck_func_return_type(
         &mut self,
-        last_block_statement: Option<&CheckedStatement>,
+        ret: &CheckedReturn,
         ret_type: Option<TypeId>,
     ) -> TypeId {
-        todo!()
+        //TODO: for the sake of simplicity assume the type is always given for now
+        let ret_ty = ret_type.unwrap();
+        let ret_exp_ty = ret.expression.type_id();
+
+        if ret_ty != ret_exp_ty {
+            todo!("handle error")
+        }
+        ret_ty
     }
 }

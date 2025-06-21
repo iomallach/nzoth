@@ -1,4 +1,7 @@
-use crate::{ast::{InfixOp, PrefixOp}, source::Span};
+use crate::{
+    ast::{InfixOp, PrefixOp},
+    source::Span,
+};
 
 pub type TypeId = usize;
 
@@ -6,35 +9,13 @@ pub const INT_TYPE_ID: TypeId = 0;
 pub const BOOL_TYPE_ID: TypeId = 1;
 pub const FLOAT_TYPE_ID: TypeId = 2;
 
-pub enum CheckedStatement {
-    LetVarDeclaration(CheckedLetVarDeclaration),
-    Expression(CheckedExpression),
-    Block(CheckedBlock),
-    LetFuncDeclaration(CheckedLetFuncDeclaration),
-    Return(CheckedReturn),
-    EndOfProgram,
+#[derive(Clone)]
+pub enum CheckedNode {
+    FunctionDeclaration(CheckedFuncDeclaration),
 }
 
 #[derive(Clone)]
-pub struct CheckedLetVarDeclaration {
-    pub name: String,
-    pub initializer: Box<CheckedExpression>,
-    pub ty: TypeId,
-    pub span: Span,
-}
-
-pub struct CheckedBlock {
-    pub statements: Vec<CheckedStatement>,
-    pub trailing_expression: Option<CheckedExpression>,
-    pub span: Span,
-}
-
-pub struct CheckedFunctionBody {
-    pub statements: Vec<CheckedStatement>,
-    pub span: Span,
-}
-
-pub struct CheckedLetFuncDeclaration {
+pub struct CheckedFuncDeclaration {
     pub name: String,
     pub parameters: Vec<CheckedLetVarDeclaration>,
     pub body: CheckedFunctionBody,
@@ -42,6 +23,35 @@ pub struct CheckedLetFuncDeclaration {
     pub span: Span,
 }
 
+#[derive(Clone)]
+pub struct CheckedFunctionBody {
+    pub statements: Vec<CheckedStatement>,
+    pub span: Span,
+}
+
+#[derive(Clone)]
+pub enum CheckedStatement {
+    Node(CheckedNode),
+    CheckedLetVarDeclaration(CheckedLetVarDeclaration, CheckedExpression),
+    Expression(CheckedExpression),
+    Return(CheckedReturn),
+}
+
+#[derive(Clone)]
+pub struct CheckedLetVarDeclaration {
+    pub name: String,
+    pub ty: TypeId,
+    pub span: Span,
+}
+
+#[derive(Clone)]
+pub struct CheckedBlock {
+    pub statements: Vec<CheckedStatement>,
+    pub trailing_expression: Option<CheckedExpression>,
+    pub span: Span,
+}
+
+#[derive(Clone)]
 pub struct CheckedReturn {
     pub expression: CheckedExpression,
     pub span: Span,
@@ -63,6 +73,18 @@ pub enum CheckedExpression {
 }
 
 impl CheckedExpression {
+    pub fn span(&self) -> Span {
+        match self {
+            CheckedExpression::NumericLiteral(_, _, span) => *span,
+            CheckedExpression::Bool(_, span) => *span,
+            CheckedExpression::Variable(_, _, span) => *span,
+            CheckedExpression::Prefix(_, _, _, span) => *span,
+            CheckedExpression::Infix(_, _, _, _, span) => *span,
+        }
+    }
+}
+
+impl CheckedExpression {
     pub fn type_id(&self) -> TypeId {
         match self {
             Self::NumericLiteral(_, tid, _) => *tid,
@@ -81,12 +103,12 @@ pub enum CheckedType {
 impl CheckedType {
     pub fn is_numeric(&self) -> bool {
         match self {
-            Self::BuiltIn(bi) => bi.is_numeric()
+            Self::BuiltIn(bi) => bi.is_numeric(),
         }
     }
     pub fn is_bool(&self) -> bool {
         match self {
-            Self::BuiltIn(bi) => bi.is_bool()
+            Self::BuiltIn(bi) => bi.is_bool(),
         }
     }
 
@@ -162,7 +184,7 @@ pub enum CheckedInfixOp {
 impl From<InfixOp> for CheckedInfixOp {
     fn from(value: InfixOp) -> Self {
         match value {
-            InfixOp::Add => Self::Add
+            InfixOp::Add => Self::Add,
             InfixOp::Assignment => Self::Assignment,
             InfixOp::Subtract => Self::Subtract,
             InfixOp::Multiply => Self::Multiply,

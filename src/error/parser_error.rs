@@ -58,6 +58,18 @@ impl<'a> ParserError<'a> {
             source,
         }
     }
+
+    pub fn expected_top_level_item(
+        found: TokenKind,
+        span: Span,
+        source: &'a RefCell<SourceFile<'a>>,
+    ) -> Self {
+        Self {
+            error: ParserErrorKind::ExpectedTopLevelItem { found },
+            span,
+            source,
+        }
+    }
 }
 
 impl<'a> std::error::Error for ParserError<'a> {
@@ -91,6 +103,9 @@ pub enum ParserErrorKind {
     UnknownOperatorInExpression(TokenKind),
     UnexpectedEndOfFile,
     UnknownSymbolInLetDeclaration(String),
+    ExpectedTopLevelItem {
+        found: TokenKind,
+    },
 }
 
 impl std::error::Error for ParserErrorKind {}
@@ -107,6 +122,9 @@ impl std::fmt::Display for ParserErrorKind {
             }
             Self::UnknownSymbolInLetDeclaration(s) => {
                 write!(f, "Unknown symbol `{s}` in let declaration")
+            }
+            Self::ExpectedTopLevelItem { found } => {
+                write!(f, "Expected a top level item, found {found} ")
             }
         }
     }

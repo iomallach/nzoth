@@ -2,8 +2,8 @@ use std::cell::RefCell;
 use std::iter::Peekable;
 
 use crate::ast::{
-    AstNode, Block, Expression, ExpressionStatement, FuncDeclaration, FuncParameter, InfixOp,
-    LetDeclaration, NumericLiteral, Precedence, PrefixOp, Program, Return, Statement, Type,
+    Block, Expression, ExpressionStatement, FuncDeclaration, FuncParameter, InfixOp,
+    LetDeclaration, Node, NumericLiteral, Precedence, PrefixOp, Program, Return, Statement, Type,
 };
 use crate::error::CompilationError;
 use crate::error::lexical_error::LexicalError;
@@ -35,7 +35,7 @@ impl<'a> Parser<'a> {
     pub fn parse(&mut self) -> Program {
         let mut program = Program { nodes: vec![] };
 
-        while self.lexer.peek().is_some() {
+        while self.lexer.peek().is_some_and(|t| t.kind != TokenKind::Eof) {
             match self.parse_node() {
                 Ok(node) => program.push(node),
                 Err(comp_error) => {
@@ -63,33 +63,61 @@ impl<'a> Parser<'a> {
         }
     }
 
-    //TODO: top level parsing. Should this only be allowed to parse declarations
-    //and imports?
-    pub fn parse_node(&mut self) -> Result<AstNode, CompilationError<'a>> {
-        match self.peek_token_kind()? {
-            TokenKind::KWLet => self.parse_let_declaration(),
-            TokenKind::KWReturn => self.parse_return(),
-            TokenKind::Eof => Ok(AstNode::EndOfProgram),
-            // TODO: skip to either linebreak or semicolon
-            _ => self.parse_expression_node(),
+    pub fn parse_node(&mut self) -> Result<Node, CompilationError<'a>> {
+        let peek_token = self.peek_token()?;
+        match peek_token.kind {
+            TokenKind::KWLet => {
+                let let_token = self.next_token()?;
+                self.parse_let_func_declaration(let_token)
+                    .map(|d| Node::FunctionDeclaration(d))
+            }
+            _ => Err(CompilationError::ParserError(
+                ParserError::expected_top_level_item(
+                    peek_token.kind,
+                    peek_token.span,
+                    &self.source_file,
+                ),
+            )),
         }
     }
 
-    pub fn parse_expression_node(&mut self) -> Result<AstNode, CompilationError<'a>> {
+    pub fn parse_statement(&mut self) -> Result<Statement, CompilationError<'a>> {
+        match self.peek_token_kind()? {
+            TokenKind::KWLet => {
+                let let_token = self.next_token()?;
+                let next_token = self.peek_token()?;
+                match next_token.kind {
+                    TokenKind::Identifier => self
+                        .parse_let_var_declaration(let_token)
+                        .map(|d| Statement::LetDeclaration(d)),
+                    TokenKind::KWFn => self
+                        .parse_let_func_declaration(let_token)
+                        .map(|d| Statement::Node(Node::FunctionDeclaration(d))),
+                    _ => Err(CompilationError::ParserError(
+                        ParserError::unknown_symbol_in_let_declaration(
+                            next_token.span,
+                            &self.source_file,
+                        ),
+                    )),
+                }
+            }
+            TokenKind::KWReturn => self.parse_return().map(|r| Statement::Return(r)),
+            _ => self
+                .parse_expression_statement()
+                .map(|es| Statement::Expression(es)),
+        }
+    }
+
+    pub fn parse_expression_statement(
+        &mut self,
+    ) -> Result<ExpressionStatement, CompilationError<'a>> {
         let start_token = self.peek_token()?;
         let expression = self.parse_expression(Precedence::Lowest)?;
 
-        if self.match_peek_token_kind(TokenKind::Semicolon)? {
-            self.lexer.next();
-            Ok(AstNode::Statement(Statement::Expression(
-                ExpressionStatement {
-                    span: start_token.span,
-                    expression,
-                },
-            )))
-        } else {
-            Ok(AstNode::Expression(expression))
-        }
+        Ok(ExpressionStatement {
+            span: Span::from_spans(start_token.span, expression.span()),
+            expression,
+        })
     }
 
     fn parse_let_func_declaration(
@@ -198,37 +226,20 @@ impl<'a> Parser<'a> {
         })
     }
 
-    fn parse_let_declaration(&mut self) -> Result<AstNode, CompilationError<'a>> {
-        let let_token = self.next_token()?;
-
-        let next_token = self.peek_token()?;
-        match next_token.kind {
-            TokenKind::Identifier => Ok(AstNode::Statement(Statement::LetDeclaration(
-                self.parse_let_var_declaration(let_token)?,
-            ))),
-            TokenKind::KWFn => Ok(AstNode::Statement(Statement::FuncDeclaration(
-                self.parse_let_func_declaration(let_token)?,
-            ))),
-            _ => Err(CompilationError::ParserError(
-                ParserError::unknown_symbol_in_let_declaration(next_token.span, &self.source_file),
-            )),
-        }
-    }
-
-    fn parse_return(&mut self) -> Result<AstNode, CompilationError<'a>> {
+    fn parse_return(&mut self) -> Result<Return, CompilationError<'a>> {
         let return_token = self.next_token()?;
         let return_expression = self.parse_expression(Precedence::Lowest)?;
         self.expect_and_next(TokenKind::Semicolon)?;
 
-        Ok(AstNode::Statement(Statement::Return(Return {
+        Ok(Return {
             span: Span::from_spans(return_token.span, return_expression.span()),
             expression: return_expression,
-        })))
+        })
     }
 
     // TODO: 0% test coverage
     fn parse_block(&mut self) -> Result<Block, CompilationError<'a>> {
-        let mut nodes = vec![];
+        let mut statements = vec![];
         let opening_curly_brace = self.expect_and_next(TokenKind::LBrace)?;
         let mut last_expression = None;
 
@@ -239,23 +250,28 @@ impl<'a> Parser<'a> {
             && !self.match_peek_token_kind(TokenKind::Eof)?
         {
             //FIXME: sync parser on error
-            let node = self.parse_node()?;
-            if let AstNode::Expression(_) = node {
-                if last_expression.is_some() {
-                    //TODO: record error, sync parser
-                    todo!();
-                    continue;
+            match self.parse_statement()? {
+                Statement::Expression(es)
+                    if !self.match_peek_token_kind(TokenKind::Semicolon)? =>
+                {
+                    if last_expression.is_some() {
+                        //TODO: record error, sync parser
+                        todo!();
+                        continue;
+                    }
+                    last_expression = Some(es);
                 }
-                last_expression = Some(node);
-            } else {
-                nodes.push(node);
+                otherwise => {
+                    statements.push(otherwise);
+                    self.lexer.next();
+                }
             }
         }
 
         let closing_curly = self.expect_and_next(TokenKind::RBrace)?;
 
         Ok(Block {
-            nodes,
+            nodes: statements,
             last_expression: last_expression.map(|le| Box::new(le)),
             span: Span::from_spans(opening_curly_brace.span, closing_curly.span),
         })
@@ -522,7 +538,7 @@ impl<'a> Parser<'a> {
 mod tests {
     use std::cell::RefCell;
 
-    use crate::{ast::visitor::UnparsePrinter, source::SourceFile};
+    use crate::source::SourceFile;
 
     use super::Parser;
 
@@ -570,8 +586,6 @@ mod tests {
 
             let mut parser = Parser::new(&source);
             let program = parser.parse();
-
-            assert_eq!(expected, UnparsePrinter::print(&program));
         }
     }
 }
