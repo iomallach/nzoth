@@ -50,13 +50,11 @@ impl<'a> Parser<'a> {
     fn synchronize_parser(&mut self) {
         loop {
             match self.peek_token_kind() {
-                Ok(kind)
-                    if matches!(
-                        kind,
-                        TokenKind::Eof | TokenKind::Semicolon | TokenKind::RBrace
-                    ) =>
-                {
+                Ok(kind) if matches!(kind, TokenKind::Eof | TokenKind::Semicolon) => {
                     self.lexer.next();
+                    return;
+                }
+                Ok(kind) if matches!(kind, TokenKind::RBrace) => {
                     return;
                 }
                 _ => {
@@ -242,11 +240,10 @@ impl<'a> Parser<'a> {
         })
     }
 
-    // TODO: 0% test coverage
     fn parse_block(&mut self) -> Result<Block, CompilationError<'a>> {
         let mut statements = vec![];
         let opening_curly_brace = self.expect_and_next(TokenKind::LBrace)?;
-        let mut last_expression = None;
+        let mut last_expression: Option<ExpressionStatement> = None;
 
         // TODO: edge cases: empty statements, no statements
         // TODO: these two probably should not short-circuit the execution and be handled
@@ -254,16 +251,19 @@ impl<'a> Parser<'a> {
         while !self.match_peek_token_kind(TokenKind::RBrace)?
             && !self.match_peek_token_kind(TokenKind::Eof)?
         {
-            //FIXME: sync parser on error
+            if let Some(le) = &last_expression {
+                //FIXME: wrong error location, should point at the end of the last expression
+                self.errors.push(CompilationError::ParserError(
+                    ParserError::expected_semicolon(
+                        Span::from_span_end(le.expression.span()),
+                        &self.source_file,
+                    ),
+                ));
+            }
             match self.parse_statement() {
                 Ok(Statement::Expression(es))
                     if !self.match_peek_token_kind(TokenKind::Semicolon)? =>
                 {
-                    if last_expression.is_some() {
-                        //TODO: record error, sync parser
-                        todo!();
-                        continue;
-                    }
                     last_expression = Some(es);
                 }
                 Ok(Statement::Expression(es))

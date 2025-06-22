@@ -70,6 +70,14 @@ impl<'a> ParserError<'a> {
             source,
         }
     }
+
+    pub fn expected_semicolon(span: Span, source: &'a RefCell<SourceFile<'a>>) -> Self {
+        Self {
+            error: ParserErrorKind::ExpectedSemicolon,
+            span,
+            source,
+        }
+    }
 }
 
 impl<'a> std::error::Error for ParserError<'a> {
@@ -106,6 +114,7 @@ pub enum ParserErrorKind {
     ExpectedTopLevelItem {
         found: TokenKind,
     },
+    ExpectedSemicolon,
 }
 
 impl std::error::Error for ParserErrorKind {}
@@ -125,6 +134,9 @@ impl std::fmt::Display for ParserErrorKind {
             }
             Self::ExpectedTopLevelItem { found } => {
                 write!(f, "Expected a top level item, found {found} ")
+            }
+            Self::ExpectedSemicolon => {
+                write!(f, "Expected semicolon")
             }
         }
     }

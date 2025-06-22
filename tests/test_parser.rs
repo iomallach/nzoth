@@ -81,6 +81,11 @@ fn test_valid_func_declarations() {
 }
 
 #[test]
+fn test_invalid_func_declarations() {
+    test_invalid_cases("resources/parser_cases/invalid_func_declarations.nz");
+}
+
+#[test]
 fn test_valid_prefix_expressions() {
     test_valid_cases("resources/parser_cases/valid_prefix_expressions.nz");
 }

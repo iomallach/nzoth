@@ -1,0 +1,10 @@
+---
+source: tests/test_parser.rs
+input_file: tests/resources/parser_cases/invalid_func_declarations.nz
+---
+Expected semicolon at line 1, column 5:
+  bar + baz
+     ^
+Expected semicolon at line 6, column 7:
+    baz
+       ^

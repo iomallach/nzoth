@@ -94,6 +94,14 @@ impl Span {
             file: start_span.file,
         }
     }
+
+    pub fn from_span_end(span: Span) -> Self {
+        Span {
+            start: span.end,
+            end: span.end,
+            file: span.file,
+        }
+    }
 }
 
 #[cfg(test)]

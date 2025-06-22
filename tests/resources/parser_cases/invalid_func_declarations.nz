@@ -1,0 +1,9 @@
+let fn foo(bar :: int, baz :: float) :: float {
+  bar + baz
+  foobar
+}
+
+let fn foo(bar :: int, baz :: float) :: float {
+    baz
+    return bar + baz;
+}
