@@ -50,7 +50,12 @@ impl<'a> Parser<'a> {
     fn synchronize_parser(&mut self) {
         loop {
             match self.peek_token_kind() {
-                Ok(kind) if matches!(kind, TokenKind::Eof | TokenKind::Semicolon) => {
+                Ok(kind)
+                    if matches!(
+                        kind,
+                        TokenKind::Eof | TokenKind::Semicolon | TokenKind::RBrace
+                    ) =>
+                {
                     self.lexer.next();
                     return;
                 }
@@ -250,8 +255,8 @@ impl<'a> Parser<'a> {
             && !self.match_peek_token_kind(TokenKind::Eof)?
         {
             //FIXME: sync parser on error
-            match self.parse_statement()? {
-                Statement::Expression(es)
+            match self.parse_statement() {
+                Ok(Statement::Expression(es))
                     if !self.match_peek_token_kind(TokenKind::Semicolon)? =>
                 {
                     if last_expression.is_some() {
@@ -261,9 +266,18 @@ impl<'a> Parser<'a> {
                     }
                     last_expression = Some(es);
                 }
-                otherwise => {
+                Ok(Statement::Expression(es))
+                    if self.match_peek_token_kind(TokenKind::Semicolon)? =>
+                {
+                    statements.push(Statement::Expression(es));
+                    self.expect_and_next(TokenKind::Semicolon)?;
+                }
+                Ok(otherwise) => {
                     statements.push(otherwise);
-                    self.lexer.next();
+                }
+                Err(err) => {
+                    self.errors.push(err);
+                    self.synchronize_parser();
                 }
             }
         }
