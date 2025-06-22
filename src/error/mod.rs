@@ -1,6 +1,8 @@
+use check_error::CheckError;
 use lexical_error::LexicalError;
 use parser_error::ParserError;
 
+pub mod check_error;
 pub mod lexical_error;
 pub mod parser_error;
 
@@ -9,6 +11,7 @@ pub mod parser_error;
 pub enum CompilationError<'a> {
     LexicalError(LexicalError<'a>),
     ParserError(ParserError<'a>),
+    CheckError(CheckError<'a>),
 }
 
 impl<'a> std::error::Error for CompilationError<'a> {}
@@ -18,6 +21,7 @@ impl<'a> std::fmt::Display for CompilationError<'a> {
         match self {
             Self::LexicalError(le) => write!(f, "{le}"),
             Self::ParserError(pe) => write!(f, "{pe}"),
+            Self::CheckError(ce) => write!(f, "{ce}"),
         }
     }
 }
