@@ -9,11 +9,12 @@ use checked_ir::{
 
 use crate::ast::{
     Block, Expression, FuncDeclaration, FuncParameter, LetDeclaration, Node, NumericLiteral,
-    Program, Statement, Type,
+    Program, Return, Statement, Type,
 };
 
 pub mod checked_ir;
 
+#[derive(Debug)]
 pub struct CompilationUnit {
     scope: Scope,
     functions: Vec<CheckedFuncDeclaration>,
@@ -81,6 +82,7 @@ impl CompilationUnit {
     }
 }
 
+#[derive(Debug)]
 pub struct Scope {
     parent: Option<Box<Scope>>,
     functions: HashMap<String, CheckedFuncDeclaration>,
@@ -171,7 +173,14 @@ impl Checker {
                 let (decl, expr) = self.typecheck_let_declaration(ld);
                 CheckedStatement::CheckedLetVarDeclaration(decl, expr)
             }
-            Statement::Return(_) => todo!(),
+            Statement::Return(ret) => CheckedStatement::Return(self.typecheck_return(ret)),
+        }
+    }
+
+    fn typecheck_return(&mut self, ret: &Return) -> CheckedReturn {
+        CheckedReturn {
+            expression: self.typecheck_expression(&ret.expression),
+            span: ret.span,
         }
     }
 

@@ -1,0 +1,7 @@
+let fn main() :: int {
+  let foo = 1;
+  let bar :: int = 1;
+  let baz = 3.4;
+  let foobar :: float = 7.3;
+  return 1;
+}

@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::{cell::RefCell, path::Path};
 
 use nzoth::{error::CompilationError, source::SourceFile, token::Token};
 
@@ -46,4 +46,16 @@ impl<'a> std::fmt::Display for SnapshotTokens<'a> {
         }
         f.write_str("]")
     }
+}
+
+pub fn create_source_file<'a>(path: &'a Path, contents: &'a str) -> RefCell<SourceFile<'a>> {
+    RefCell::new(SourceFile::new(
+        0,
+        path.file_name()
+            .expect("Expect a file")
+            .to_str()
+            .expect("No fail")
+            .to_string(),
+        contents,
+    ))
 }

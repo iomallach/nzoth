@@ -9,12 +9,12 @@ pub const INT_TYPE_ID: TypeId = 0;
 pub const BOOL_TYPE_ID: TypeId = 1;
 pub const FLOAT_TYPE_ID: TypeId = 2;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum CheckedNode {
     FunctionDeclaration(CheckedFuncDeclaration),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CheckedFuncDeclaration {
     pub name: String,
     pub parameters: Vec<CheckedLetVarDeclaration>,
@@ -23,13 +23,13 @@ pub struct CheckedFuncDeclaration {
     pub span: Span,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CheckedFunctionBody {
     pub statements: Vec<CheckedStatement>,
     pub span: Span,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum CheckedStatement {
     Node(CheckedNode),
     CheckedLetVarDeclaration(CheckedLetVarDeclaration, CheckedExpression),
@@ -37,7 +37,7 @@ pub enum CheckedStatement {
     Return(CheckedReturn),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CheckedLetVarDeclaration {
     pub name: String,
     pub ty: TypeId,
@@ -51,13 +51,13 @@ pub struct CheckedBlock {
     pub span: Span,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CheckedReturn {
     pub expression: CheckedExpression,
     pub span: Span,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum CheckedExpression {
     NumericLiteral(CheckedNumericLiteral, TypeId, Span),
     Bool(bool, Span),
@@ -96,6 +96,7 @@ impl CheckedExpression {
     }
 }
 
+#[derive(Debug)]
 pub enum CheckedType {
     BuiltIn(BuiltInType),
 }
@@ -121,6 +122,7 @@ impl CheckedType {
     }
 }
 
+#[derive(Debug)]
 pub enum BuiltInType {
     Int,
     Float,
@@ -145,13 +147,13 @@ impl BuiltInType {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum CheckedNumericLiteral {
     Integer(i64),
     Float(f64),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum CheckedPrefixOp {
     Negation,
     Not,
@@ -166,7 +168,7 @@ impl From<PrefixOp> for CheckedPrefixOp {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum CheckedInfixOp {
     Add,
     Assignment,

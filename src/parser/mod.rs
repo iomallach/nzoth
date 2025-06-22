@@ -130,6 +130,7 @@ impl<'a> Parser<'a> {
         self.expect_and_next(TokenKind::KWFn)?;
         let identifier_token = self.expect_and_next(TokenKind::Identifier)?;
         let func_parameters = self.parse_func_parameter_list()?;
+        //FIXME: when there is no ::, but a type follows, the behaviour is incorrect
         let return_ty = if self.match_peek_token_kind(TokenKind::ColonColon)? {
             self.lexer.next();
             Some(self.parse_type_annotation()?)

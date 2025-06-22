@@ -1,0 +1,519 @@
+---
+source: tests/test_checker.rs
+input_file: tests/resources/checker_cases/valid_let_declarations.nz
+---
+CompilationUnit {
+    scope: Scope {
+        parent: None,
+        functions: {
+            "main": CheckedFuncDeclaration {
+                name: "main",
+                parameters: [],
+                body: CheckedFunctionBody {
+                    statements: [
+                        CheckedLetVarDeclaration(
+                            CheckedLetVarDeclaration {
+                                name: "foo",
+                                ty: 0,
+                                span: Span {
+                                    start: Position {
+                                        offset: 25,
+                                        line: 1,
+                                        column: 2,
+                                    },
+                                    end: Position {
+                                        offset: 36,
+                                        line: 1,
+                                        column: 13,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                            },
+                            NumericLiteral(
+                                Integer(
+                                    1,
+                                ),
+                                0,
+                                Span {
+                                    start: Position {
+                                        offset: 35,
+                                        line: 1,
+                                        column: 12,
+                                    },
+                                    end: Position {
+                                        offset: 36,
+                                        line: 1,
+                                        column: 13,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                            ),
+                        ),
+                        CheckedLetVarDeclaration(
+                            CheckedLetVarDeclaration {
+                                name: "bar",
+                                ty: 0,
+                                span: Span {
+                                    start: Position {
+                                        offset: 40,
+                                        line: 2,
+                                        column: 2,
+                                    },
+                                    end: Position {
+                                        offset: 58,
+                                        line: 2,
+                                        column: 20,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                            },
+                            NumericLiteral(
+                                Integer(
+                                    1,
+                                ),
+                                0,
+                                Span {
+                                    start: Position {
+                                        offset: 57,
+                                        line: 2,
+                                        column: 19,
+                                    },
+                                    end: Position {
+                                        offset: 58,
+                                        line: 2,
+                                        column: 20,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                            ),
+                        ),
+                        CheckedLetVarDeclaration(
+                            CheckedLetVarDeclaration {
+                                name: "baz",
+                                ty: 2,
+                                span: Span {
+                                    start: Position {
+                                        offset: 62,
+                                        line: 3,
+                                        column: 2,
+                                    },
+                                    end: Position {
+                                        offset: 75,
+                                        line: 3,
+                                        column: 15,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                            },
+                            NumericLiteral(
+                                Float(
+                                    3.4,
+                                ),
+                                2,
+                                Span {
+                                    start: Position {
+                                        offset: 72,
+                                        line: 3,
+                                        column: 12,
+                                    },
+                                    end: Position {
+                                        offset: 75,
+                                        line: 3,
+                                        column: 15,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                            ),
+                        ),
+                        CheckedLetVarDeclaration(
+                            CheckedLetVarDeclaration {
+                                name: "foobar",
+                                ty: 2,
+                                span: Span {
+                                    start: Position {
+                                        offset: 79,
+                                        line: 4,
+                                        column: 2,
+                                    },
+                                    end: Position {
+                                        offset: 104,
+                                        line: 4,
+                                        column: 27,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                            },
+                            NumericLiteral(
+                                Float(
+                                    7.3,
+                                ),
+                                2,
+                                Span {
+                                    start: Position {
+                                        offset: 101,
+                                        line: 4,
+                                        column: 24,
+                                    },
+                                    end: Position {
+                                        offset: 104,
+                                        line: 4,
+                                        column: 27,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                            ),
+                        ),
+                        Return(
+                            CheckedReturn {
+                                expression: NumericLiteral(
+                                    Integer(
+                                        1,
+                                    ),
+                                    0,
+                                    Span {
+                                        start: Position {
+                                            offset: 115,
+                                            line: 5,
+                                            column: 9,
+                                        },
+                                        end: Position {
+                                            offset: 116,
+                                            line: 5,
+                                            column: 10,
+                                        },
+                                        file: FileId(
+                                            0,
+                                        ),
+                                    },
+                                ),
+                                span: Span {
+                                    start: Position {
+                                        offset: 108,
+                                        line: 5,
+                                        column: 2,
+                                    },
+                                    end: Position {
+                                        offset: 116,
+                                        line: 5,
+                                        column: 10,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                            },
+                        ),
+                    ],
+                    span: Span {
+                        start: Position {
+                            offset: 21,
+                            line: 0,
+                            column: 21,
+                        },
+                        end: Position {
+                            offset: 119,
+                            line: 6,
+                            column: 1,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                },
+                return_type: 0,
+                span: Span {
+                    start: Position {
+                        offset: 0,
+                        line: 0,
+                        column: 0,
+                    },
+                    end: Position {
+                        offset: 3,
+                        line: 0,
+                        column: 3,
+                    },
+                    file: FileId(
+                        0,
+                    ),
+                },
+            },
+        },
+        var_decls: {},
+    },
+    functions: [
+        CheckedFuncDeclaration {
+            name: "main",
+            parameters: [],
+            body: CheckedFunctionBody {
+                statements: [
+                    CheckedLetVarDeclaration(
+                        CheckedLetVarDeclaration {
+                            name: "foo",
+                            ty: 0,
+                            span: Span {
+                                start: Position {
+                                    offset: 25,
+                                    line: 1,
+                                    column: 2,
+                                },
+                                end: Position {
+                                    offset: 36,
+                                    line: 1,
+                                    column: 13,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        },
+                        NumericLiteral(
+                            Integer(
+                                1,
+                            ),
+                            0,
+                            Span {
+                                start: Position {
+                                    offset: 35,
+                                    line: 1,
+                                    column: 12,
+                                },
+                                end: Position {
+                                    offset: 36,
+                                    line: 1,
+                                    column: 13,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                    ),
+                    CheckedLetVarDeclaration(
+                        CheckedLetVarDeclaration {
+                            name: "bar",
+                            ty: 0,
+                            span: Span {
+                                start: Position {
+                                    offset: 40,
+                                    line: 2,
+                                    column: 2,
+                                },
+                                end: Position {
+                                    offset: 58,
+                                    line: 2,
+                                    column: 20,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        },
+                        NumericLiteral(
+                            Integer(
+                                1,
+                            ),
+                            0,
+                            Span {
+                                start: Position {
+                                    offset: 57,
+                                    line: 2,
+                                    column: 19,
+                                },
+                                end: Position {
+                                    offset: 58,
+                                    line: 2,
+                                    column: 20,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                    ),
+                    CheckedLetVarDeclaration(
+                        CheckedLetVarDeclaration {
+                            name: "baz",
+                            ty: 2,
+                            span: Span {
+                                start: Position {
+                                    offset: 62,
+                                    line: 3,
+                                    column: 2,
+                                },
+                                end: Position {
+                                    offset: 75,
+                                    line: 3,
+                                    column: 15,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        },
+                        NumericLiteral(
+                            Float(
+                                3.4,
+                            ),
+                            2,
+                            Span {
+                                start: Position {
+                                    offset: 72,
+                                    line: 3,
+                                    column: 12,
+                                },
+                                end: Position {
+                                    offset: 75,
+                                    line: 3,
+                                    column: 15,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                    ),
+                    CheckedLetVarDeclaration(
+                        CheckedLetVarDeclaration {
+                            name: "foobar",
+                            ty: 2,
+                            span: Span {
+                                start: Position {
+                                    offset: 79,
+                                    line: 4,
+                                    column: 2,
+                                },
+                                end: Position {
+                                    offset: 104,
+                                    line: 4,
+                                    column: 27,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        },
+                        NumericLiteral(
+                            Float(
+                                7.3,
+                            ),
+                            2,
+                            Span {
+                                start: Position {
+                                    offset: 101,
+                                    line: 4,
+                                    column: 24,
+                                },
+                                end: Position {
+                                    offset: 104,
+                                    line: 4,
+                                    column: 27,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                    ),
+                    Return(
+                        CheckedReturn {
+                            expression: NumericLiteral(
+                                Integer(
+                                    1,
+                                ),
+                                0,
+                                Span {
+                                    start: Position {
+                                        offset: 115,
+                                        line: 5,
+                                        column: 9,
+                                    },
+                                    end: Position {
+                                        offset: 116,
+                                        line: 5,
+                                        column: 10,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                            ),
+                            span: Span {
+                                start: Position {
+                                    offset: 108,
+                                    line: 5,
+                                    column: 2,
+                                },
+                                end: Position {
+                                    offset: 116,
+                                    line: 5,
+                                    column: 10,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        },
+                    ),
+                ],
+                span: Span {
+                    start: Position {
+                        offset: 21,
+                        line: 0,
+                        column: 21,
+                    },
+                    end: Position {
+                        offset: 119,
+                        line: 6,
+                        column: 1,
+                    },
+                    file: FileId(
+                        0,
+                    ),
+                },
+            },
+            return_type: 0,
+            span: Span {
+                start: Position {
+                    offset: 0,
+                    line: 0,
+                    column: 0,
+                },
+                end: Position {
+                    offset: 3,
+                    line: 0,
+                    column: 3,
+                },
+                file: FileId(
+                    0,
+                ),
+            },
+        },
+    ],
+    types: [
+        BuiltIn(
+            Int,
+        ),
+        BuiltIn(
+            Bool,
+        ),
+        BuiltIn(
+            Float,
+        ),
+    ],
+}
