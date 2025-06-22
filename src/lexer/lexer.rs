@@ -8,6 +8,7 @@ pub struct Lexer<'a> {
     source_file: &'a RefCell<SourceFile<'a>>,
     source: Peekable<CharIndices<'a>>,
     last_pos: usize,
+    previous_kind: TokenKind,
 }
 
 impl<'a> Lexer<'a> {
@@ -16,6 +17,7 @@ impl<'a> Lexer<'a> {
             source_file,
             source: source_file.borrow().contents.char_indices().peekable(),
             last_pos: 0,
+            previous_kind: TokenKind::Eof,
         }
     }
 
@@ -171,9 +173,18 @@ impl<'a> Iterator for Lexer<'a> {
                         ));
                     }
                 }
-                '(' => {
-                    token = Some(self.make_token(TokenKind::LParen, start_offset, start_offset + 1))
-                }
+                '(' => match self.source.peek() {
+                    Some((j, ')')) if self.previous_kind != TokenKind::Identifier => {
+                        let end_offset = j + 1;
+                        token =
+                            Some(self.make_token(TokenKind::Identifier, start_offset, end_offset));
+                        self.source.next();
+                    }
+                    _ => {
+                        token =
+                            Some(self.make_token(TokenKind::LParen, start_offset, start_offset + 1))
+                    }
+                },
                 ')' => {
                     token = Some(self.make_token(TokenKind::RParen, start_offset, start_offset + 1))
                 }
@@ -306,6 +317,7 @@ impl<'a> Iterator for Lexer<'a> {
             }
         }
 
+        self.previous_kind = token.map_or(TokenKind::Eof, |t| t.kind);
         token
     }
 }

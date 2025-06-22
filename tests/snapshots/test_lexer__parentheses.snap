@@ -1,0 +1,19 @@
+---
+source: tests/test_lexer.rs
+expression: "SnapshotTokens(tokens.into_iter().map(|t|\nSnapshotToken::new(t, &source)).collect::<Vec<_>>())"
+input_file: tests/resources/lexer_cases/parentheses.nz
+---
+[
+  Token(kind: "identifier", literal: "foo"),
+  Token(kind: "(", literal: "("),
+  Token(kind: ")", literal: ")"),
+  Token(kind: "let", literal: "let"),
+  Token(kind: "fn", literal: "fn"),
+  Token(kind: "identifier", literal: "foo"),
+  Token(kind: "(", literal: "("),
+  Token(kind: ")", literal: ")"),
+  Token(kind: "::", literal: "::"),
+  Token(kind: "identifier", literal: "()"),
+  Token(kind: "{", literal: "{"),
+  Token(kind: "}", literal: "}"),
+]
