@@ -1,3 +1,5 @@
--5;
-!true;
-!false;
+let fn main() {
+  -5;
+  !true;
+  !false;
+}

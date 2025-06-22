@@ -1,28 +1,30 @@
-5 + 5;
-5 - 5;
-5 * 5;
-5 / 5;
-5 != 5;
-5 == 5;
-5 > 5;
-5 < 5;
-5 >= 5;
-5 <= 5;
-true != false;
-false != true;
-true != true;
-false != false;
-true == false;
-false == true;
-false == false;
-true == true;
-foo();
-bar(baz);
-baz(foo, bar);
-foo(5 + 5, !baz);
-5 + foo();
-5 + bar(baz, foo);
-foo() + bar(baz);
-foo() + bar(baz, foo(5 + 5));
-5.4 + foo();
-foo(5.1, (1 > 5 * 3))
+let fn main() {
+  5 + 5;
+  5 - 5;
+  5 * 5;
+  5 / 5;
+  5 != 5;
+  5 == 5;
+  5 > 5;
+  5 < 5;
+  5 >= 5;
+  5 <= 5;
+  true != false;
+  false != true;
+  true != true;
+  false != false;
+  true == false;
+  false == true;
+  false == false;
+  true == true;
+  foo();
+  bar(baz);
+  baz(foo, bar);
+  foo(5 + 5, !baz);
+  5 + foo();
+  5 + bar(baz, foo);
+  foo() + bar(baz);
+  foo() + bar(baz, foo(5 + 5));
+  5.4 + foo();
+  foo(5.1, (1 > 5 * 3))
+}

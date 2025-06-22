@@ -1,2 +1,4 @@
-true;
-false;
+let fn main() {
+  true;
+  false;
+}

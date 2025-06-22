@@ -1,1 +1,3 @@
-let foo;
+let fn main() {
+  let foo;
+}

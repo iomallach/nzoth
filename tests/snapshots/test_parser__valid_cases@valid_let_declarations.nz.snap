@@ -4,231 +4,267 @@ input_file: tests/resources/parser_cases/valid_let_declarations.nz
 ---
 Program {
     nodes: [
-        Statement(
-            LetDeclaration(
-                LetDeclaration {
-                    identifier: "foo",
-                    expression: NumericLiteral(
-                        Integer(
-                            1,
-                        ),
-                        Span {
-                            start: Position {
-                                offset: 10,
-                                line: 0,
-                                column: 10,
-                            },
-                            end: Position {
-                                offset: 11,
-                                line: 0,
-                                column: 11,
-                            },
-                            file: FileId(
-                                0,
-                            ),
-                        },
-                    ),
-                    span: Span {
-                        start: Position {
-                            offset: 0,
-                            line: 0,
-                            column: 0,
-                        },
-                        end: Position {
-                            offset: 11,
-                            line: 0,
-                            column: 11,
-                        },
-                        file: FileId(
-                            0,
-                        ),
-                    },
-                    ty: None,
-                },
-            ),
-        ),
-        Statement(
-            LetDeclaration(
-                LetDeclaration {
-                    identifier: "foo",
-                    expression: NumericLiteral(
-                        Integer(
-                            1,
-                        ),
-                        Span {
-                            start: Position {
-                                offset: 30,
-                                line: 1,
-                                column: 17,
-                            },
-                            end: Position {
-                                offset: 31,
-                                line: 1,
-                                column: 18,
-                            },
-                            file: FileId(
-                                0,
-                            ),
-                        },
-                    ),
-                    span: Span {
-                        start: Position {
-                            offset: 13,
-                            line: 1,
-                            column: 0,
-                        },
-                        end: Position {
-                            offset: 31,
-                            line: 1,
-                            column: 18,
-                        },
-                        file: FileId(
-                            0,
-                        ),
-                    },
-                    ty: Some(
-                        Name(
-                            "int",
-                        ),
-                    ),
-                },
-            ),
-        ),
-        Statement(
-            LetDeclaration(
-                LetDeclaration {
-                    identifier: "bar",
-                    expression: FunctionCall(
-                        Identifier(
-                            "foo",
-                            Span {
-                                start: Position {
-                                    offset: 43,
-                                    line: 2,
-                                    column: 10,
-                                },
-                                end: Position {
-                                    offset: 46,
-                                    line: 2,
-                                    column: 13,
-                                },
-                                file: FileId(
-                                    0,
+        FunctionDeclaration(
+            FuncDeclaration {
+                identifier: "main",
+                paramemetrs: [],
+                body: Block {
+                    nodes: [
+                        LetDeclaration(
+                            LetDeclaration {
+                                identifier: "foo",
+                                expression: NumericLiteral(
+                                    Integer(
+                                        1,
+                                    ),
+                                    Span {
+                                        start: Position {
+                                            offset: 28,
+                                            line: 1,
+                                            column: 12,
+                                        },
+                                        end: Position {
+                                            offset: 29,
+                                            line: 1,
+                                            column: 13,
+                                        },
+                                        file: FileId(
+                                            0,
+                                        ),
+                                    },
                                 ),
-                            },
-                        ),
-                        [
-                            NumericLiteral(
-                                Float(
-                                    12.3,
-                                ),
-                                Span {
+                                span: Span {
                                     start: Position {
-                                        offset: 47,
+                                        offset: 18,
+                                        line: 1,
+                                        column: 2,
+                                    },
+                                    end: Position {
+                                        offset: 29,
+                                        line: 1,
+                                        column: 13,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                                ty: None,
+                            },
+                        ),
+                        LetDeclaration(
+                            LetDeclaration {
+                                identifier: "foo",
+                                expression: NumericLiteral(
+                                    Integer(
+                                        1,
+                                    ),
+                                    Span {
+                                        start: Position {
+                                            offset: 50,
+                                            line: 2,
+                                            column: 19,
+                                        },
+                                        end: Position {
+                                            offset: 51,
+                                            line: 2,
+                                            column: 20,
+                                        },
+                                        file: FileId(
+                                            0,
+                                        ),
+                                    },
+                                ),
+                                span: Span {
+                                    start: Position {
+                                        offset: 33,
                                         line: 2,
-                                        column: 14,
+                                        column: 2,
                                     },
                                     end: Position {
                                         offset: 51,
                                         line: 2,
-                                        column: 18,
-                                    },
-                                    file: FileId(
-                                        0,
-                                    ),
-                                },
-                            ),
-                            Infix(
-                                Identifier(
-                                    "q",
-                                    Span {
-                                        start: Position {
-                                            offset: 53,
-                                            line: 2,
-                                            column: 20,
-                                        },
-                                        end: Position {
-                                            offset: 54,
-                                            line: 2,
-                                            column: 21,
-                                        },
-                                        file: FileId(
-                                            0,
-                                        ),
-                                    },
-                                ),
-                                Add,
-                                NumericLiteral(
-                                    Integer(
-                                        4,
-                                    ),
-                                    Span {
-                                        start: Position {
-                                            offset: 57,
-                                            line: 2,
-                                            column: 24,
-                                        },
-                                        end: Position {
-                                            offset: 58,
-                                            line: 2,
-                                            column: 25,
-                                        },
-                                        file: FileId(
-                                            0,
-                                        ),
-                                    },
-                                ),
-                                Span {
-                                    start: Position {
-                                        offset: 53,
-                                        line: 2,
                                         column: 20,
                                     },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                                ty: Some(
+                                    Name(
+                                        "int",
+                                    ),
+                                ),
+                            },
+                        ),
+                        LetDeclaration(
+                            LetDeclaration {
+                                identifier: "bar",
+                                expression: FunctionCall(
+                                    Identifier(
+                                        "foo",
+                                        Span {
+                                            start: Position {
+                                                offset: 65,
+                                                line: 3,
+                                                column: 12,
+                                            },
+                                            end: Position {
+                                                offset: 68,
+                                                line: 3,
+                                                column: 15,
+                                            },
+                                            file: FileId(
+                                                0,
+                                            ),
+                                        },
+                                    ),
+                                    [
+                                        NumericLiteral(
+                                            Float(
+                                                12.3,
+                                            ),
+                                            Span {
+                                                start: Position {
+                                                    offset: 69,
+                                                    line: 3,
+                                                    column: 16,
+                                                },
+                                                end: Position {
+                                                    offset: 73,
+                                                    line: 3,
+                                                    column: 20,
+                                                },
+                                                file: FileId(
+                                                    0,
+                                                ),
+                                            },
+                                        ),
+                                        Infix(
+                                            Identifier(
+                                                "q",
+                                                Span {
+                                                    start: Position {
+                                                        offset: 75,
+                                                        line: 3,
+                                                        column: 22,
+                                                    },
+                                                    end: Position {
+                                                        offset: 76,
+                                                        line: 3,
+                                                        column: 23,
+                                                    },
+                                                    file: FileId(
+                                                        0,
+                                                    ),
+                                                },
+                                            ),
+                                            Add,
+                                            NumericLiteral(
+                                                Integer(
+                                                    4,
+                                                ),
+                                                Span {
+                                                    start: Position {
+                                                        offset: 79,
+                                                        line: 3,
+                                                        column: 26,
+                                                    },
+                                                    end: Position {
+                                                        offset: 80,
+                                                        line: 3,
+                                                        column: 27,
+                                                    },
+                                                    file: FileId(
+                                                        0,
+                                                    ),
+                                                },
+                                            ),
+                                            Span {
+                                                start: Position {
+                                                    offset: 75,
+                                                    line: 3,
+                                                    column: 22,
+                                                },
+                                                end: Position {
+                                                    offset: 76,
+                                                    line: 3,
+                                                    column: 23,
+                                                },
+                                                file: FileId(
+                                                    0,
+                                                ),
+                                            },
+                                        ),
+                                    ],
+                                    Span {
+                                        start: Position {
+                                            offset: 65,
+                                            line: 3,
+                                            column: 12,
+                                        },
+                                        end: Position {
+                                            offset: 68,
+                                            line: 3,
+                                            column: 15,
+                                        },
+                                        file: FileId(
+                                            0,
+                                        ),
+                                    },
+                                ),
+                                span: Span {
+                                    start: Position {
+                                        offset: 55,
+                                        line: 3,
+                                        column: 2,
+                                    },
                                     end: Position {
-                                        offset: 54,
-                                        line: 2,
-                                        column: 21,
+                                        offset: 68,
+                                        line: 3,
+                                        column: 15,
                                     },
                                     file: FileId(
                                         0,
                                     ),
                                 },
-                            ),
-                        ],
-                        Span {
-                            start: Position {
-                                offset: 43,
-                                line: 2,
-                                column: 10,
+                                ty: None,
                             },
-                            end: Position {
-                                offset: 46,
-                                line: 2,
-                                column: 13,
-                            },
-                            file: FileId(
-                                0,
-                            ),
-                        },
-                    ),
+                        ),
+                    ],
+                    last_expression: None,
                     span: Span {
                         start: Position {
-                            offset: 33,
-                            line: 2,
-                            column: 0,
+                            offset: 14,
+                            line: 0,
+                            column: 14,
                         },
                         end: Position {
-                            offset: 46,
-                            line: 2,
-                            column: 13,
+                            offset: 84,
+                            line: 4,
+                            column: 1,
                         },
                         file: FileId(
                             0,
                         ),
                     },
-                    ty: None,
                 },
-            ),
+                return_type: None,
+                span: Span {
+                    start: Position {
+                        offset: 0,
+                        line: 0,
+                        column: 0,
+                    },
+                    end: Position {
+                        offset: 3,
+                        line: 0,
+                        column: 3,
+                    },
+                    file: FileId(
+                        0,
+                    ),
+                },
+            },
         ),
     ],
 }

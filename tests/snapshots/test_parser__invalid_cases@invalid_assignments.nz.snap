@@ -2,6 +2,6 @@
 source: tests/test_parser.rs
 input_file: tests/resources/parser_cases/invalid_assignments.nz
 ---
-Expected =, found ; at line 0, column 7:
-let foo;
-       ^
+Expected =, found ; at line 1, column 9:
+  let foo;
+         ^

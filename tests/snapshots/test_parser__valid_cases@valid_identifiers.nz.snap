@@ -4,103 +4,157 @@ input_file: tests/resources/parser_cases/valid_identifiers.nz
 ---
 Program {
     nodes: [
-        Statement(
-            Expression(
-                ExpressionStatement {
+        FunctionDeclaration(
+            FuncDeclaration {
+                identifier: "main",
+                paramemetrs: [],
+                body: Block {
+                    nodes: [
+                        Expression(
+                            ExpressionStatement {
+                                span: Span {
+                                    start: Position {
+                                        offset: 18,
+                                        line: 1,
+                                        column: 2,
+                                    },
+                                    end: Position {
+                                        offset: 21,
+                                        line: 1,
+                                        column: 5,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                                expression: Identifier(
+                                    "foo",
+                                    Span {
+                                        start: Position {
+                                            offset: 18,
+                                            line: 1,
+                                            column: 2,
+                                        },
+                                        end: Position {
+                                            offset: 21,
+                                            line: 1,
+                                            column: 5,
+                                        },
+                                        file: FileId(
+                                            0,
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                        Expression(
+                            ExpressionStatement {
+                                span: Span {
+                                    start: Position {
+                                        offset: 25,
+                                        line: 2,
+                                        column: 2,
+                                    },
+                                    end: Position {
+                                        offset: 28,
+                                        line: 2,
+                                        column: 5,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                                expression: Identifier(
+                                    "bar",
+                                    Span {
+                                        start: Position {
+                                            offset: 25,
+                                            line: 2,
+                                            column: 2,
+                                        },
+                                        end: Position {
+                                            offset: 28,
+                                            line: 2,
+                                            column: 5,
+                                        },
+                                        file: FileId(
+                                            0,
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                    ],
+                    last_expression: Some(
+                        ExpressionStatement {
+                            span: Span {
+                                start: Position {
+                                    offset: 32,
+                                    line: 3,
+                                    column: 2,
+                                },
+                                end: Position {
+                                    offset: 35,
+                                    line: 3,
+                                    column: 5,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                            expression: Identifier(
+                                "baz",
+                                Span {
+                                    start: Position {
+                                        offset: 32,
+                                        line: 3,
+                                        column: 2,
+                                    },
+                                    end: Position {
+                                        offset: 35,
+                                        line: 3,
+                                        column: 5,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
                     span: Span {
                         start: Position {
-                            offset: 0,
+                            offset: 14,
                             line: 0,
-                            column: 0,
+                            column: 14,
                         },
                         end: Position {
-                            offset: 3,
-                            line: 0,
-                            column: 3,
+                            offset: 37,
+                            line: 4,
+                            column: 1,
                         },
                         file: FileId(
                             0,
                         ),
                     },
-                    expression: Identifier(
-                        "foo",
-                        Span {
-                            start: Position {
-                                offset: 0,
-                                line: 0,
-                                column: 0,
-                            },
-                            end: Position {
-                                offset: 3,
-                                line: 0,
-                                column: 3,
-                            },
-                            file: FileId(
-                                0,
-                            ),
-                        },
-                    ),
                 },
-            ),
-        ),
-        Statement(
-            Expression(
-                ExpressionStatement {
-                    span: Span {
-                        start: Position {
-                            offset: 5,
-                            line: 1,
-                            column: 0,
-                        },
-                        end: Position {
-                            offset: 8,
-                            line: 1,
-                            column: 3,
-                        },
-                        file: FileId(
-                            0,
-                        ),
-                    },
-                    expression: Identifier(
-                        "bar",
-                        Span {
-                            start: Position {
-                                offset: 5,
-                                line: 1,
-                                column: 0,
-                            },
-                            end: Position {
-                                offset: 8,
-                                line: 1,
-                                column: 3,
-                            },
-                            file: FileId(
-                                0,
-                            ),
-                        },
-                    ),
-                },
-            ),
-        ),
-        Expression(
-            Identifier(
-                "baz",
-                Span {
+                return_type: None,
+                span: Span {
                     start: Position {
-                        offset: 10,
-                        line: 2,
+                        offset: 0,
+                        line: 0,
                         column: 0,
                     },
                     end: Position {
-                        offset: 13,
-                        line: 2,
+                        offset: 3,
+                        line: 0,
                         column: 3,
                     },
                     file: FileId(
                         0,
                     ),
                 },
-            ),
+            },
         ),
     ],
 }
