@@ -6,6 +6,123 @@ CompilationUnit {
     scope: Scope {
         parent: None,
         functions: {
+            "foo": CheckedFuncDeclaration {
+                name: "foo",
+                parameters: [],
+                body: CheckedFunctionBody {
+                    statements: [
+                        CheckedLetVarDeclaration(
+                            CheckedLetVarDeclaration {
+                                name: "bar",
+                                ty: 0,
+                                span: Span {
+                                    start: Position {
+                                        offset: 138,
+                                        line: 9,
+                                        column: 2,
+                                    },
+                                    end: Position {
+                                        offset: 149,
+                                        line: 9,
+                                        column: 13,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                            },
+                            NumericLiteral(
+                                Integer(
+                                    2,
+                                ),
+                                0,
+                                Span {
+                                    start: Position {
+                                        offset: 148,
+                                        line: 9,
+                                        column: 12,
+                                    },
+                                    end: Position {
+                                        offset: 149,
+                                        line: 9,
+                                        column: 13,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                            ),
+                        ),
+                        Return(
+                            CheckedReturn {
+                                expression: Unit(
+                                    Span {
+                                        start: Position {
+                                            offset: 0,
+                                            line: 0,
+                                            column: 0,
+                                        },
+                                        end: Position {
+                                            offset: 0,
+                                            line: 0,
+                                            column: 0,
+                                        },
+                                        file: FileId(
+                                            0,
+                                        ),
+                                    },
+                                ),
+                                span: Span {
+                                    start: Position {
+                                        offset: 0,
+                                        line: 0,
+                                        column: 0,
+                                    },
+                                    end: Position {
+                                        offset: 0,
+                                        line: 0,
+                                        column: 0,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                            },
+                        ),
+                    ],
+                    span: Span {
+                        start: Position {
+                            offset: 134,
+                            line: 8,
+                            column: 13,
+                        },
+                        end: Position {
+                            offset: 152,
+                            line: 10,
+                            column: 1,
+                        },
+                        file: FileId(
+                            0,
+                        ),
+                    },
+                },
+                return_type: 3,
+                span: Span {
+                    start: Position {
+                        offset: 121,
+                        line: 8,
+                        column: 0,
+                    },
+                    end: Position {
+                        offset: 124,
+                        line: 8,
+                        column: 3,
+                    },
+                    file: FileId(
+                        0,
+                    ),
+                },
+            },
             "main": CheckedFuncDeclaration {
                 name: "main",
                 parameters: [],
@@ -504,6 +621,123 @@ CompilationUnit {
                 ),
             },
         },
+        CheckedFuncDeclaration {
+            name: "foo",
+            parameters: [],
+            body: CheckedFunctionBody {
+                statements: [
+                    CheckedLetVarDeclaration(
+                        CheckedLetVarDeclaration {
+                            name: "bar",
+                            ty: 0,
+                            span: Span {
+                                start: Position {
+                                    offset: 138,
+                                    line: 9,
+                                    column: 2,
+                                },
+                                end: Position {
+                                    offset: 149,
+                                    line: 9,
+                                    column: 13,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        },
+                        NumericLiteral(
+                            Integer(
+                                2,
+                            ),
+                            0,
+                            Span {
+                                start: Position {
+                                    offset: 148,
+                                    line: 9,
+                                    column: 12,
+                                },
+                                end: Position {
+                                    offset: 149,
+                                    line: 9,
+                                    column: 13,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        ),
+                    ),
+                    Return(
+                        CheckedReturn {
+                            expression: Unit(
+                                Span {
+                                    start: Position {
+                                        offset: 0,
+                                        line: 0,
+                                        column: 0,
+                                    },
+                                    end: Position {
+                                        offset: 0,
+                                        line: 0,
+                                        column: 0,
+                                    },
+                                    file: FileId(
+                                        0,
+                                    ),
+                                },
+                            ),
+                            span: Span {
+                                start: Position {
+                                    offset: 0,
+                                    line: 0,
+                                    column: 0,
+                                },
+                                end: Position {
+                                    offset: 0,
+                                    line: 0,
+                                    column: 0,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
+                        },
+                    ),
+                ],
+                span: Span {
+                    start: Position {
+                        offset: 134,
+                        line: 8,
+                        column: 13,
+                    },
+                    end: Position {
+                        offset: 152,
+                        line: 10,
+                        column: 1,
+                    },
+                    file: FileId(
+                        0,
+                    ),
+                },
+            },
+            return_type: 3,
+            span: Span {
+                start: Position {
+                    offset: 121,
+                    line: 8,
+                    column: 0,
+                },
+                end: Position {
+                    offset: 124,
+                    line: 8,
+                    column: 3,
+                },
+                file: FileId(
+                    0,
+                ),
+            },
+        },
     ],
     types: [
         BuiltIn(
@@ -514,6 +748,9 @@ CompilationUnit {
         ),
         BuiltIn(
             Float,
+        ),
+        BuiltIn(
+            Unit,
         ),
     ],
 }

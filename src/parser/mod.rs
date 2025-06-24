@@ -47,6 +47,26 @@ impl<'a> Parser<'a> {
         program
     }
 
+    fn synchronize_parser_to(&mut self, kind: TokenKind) {
+        loop {
+            match self.peek_token_kind() {
+                Ok(k) if k == kind => {
+                    return;
+                }
+                Ok(k) if k == TokenKind::Eof => {
+                    return;
+                }
+                Ok(_) => {
+                    self.lexer.next();
+                }
+                Err(e) => {
+                    self.errors.push(e);
+                    self.lexer.next();
+                }
+            }
+        }
+    }
+
     fn synchronize_parser(&mut self) {
         loop {
             match self.peek_token_kind() {
@@ -133,7 +153,14 @@ impl<'a> Parser<'a> {
         //FIXME: when there is no ::, but a type follows, the behaviour is incorrect
         let return_ty = if self.match_peek_token_kind(TokenKind::ColonColon)? {
             self.lexer.next();
-            Some(self.parse_type_annotation()?)
+            match self.parse_type_annotation() {
+                Ok(typ) => Some(typ),
+                Err(e) => {
+                    self.errors.push(e);
+                    self.synchronize_parser_to(TokenKind::LBrace);
+                    None
+                }
+            }
         } else {
             None
         };
@@ -348,6 +375,10 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn parse_unit(&mut self) -> Result<Expression, CompilationError<'a>> {
+        self.next_token().map(|t| Expression::Unit(t.span))
+    }
+
     //TODO: test coverage 0%
     fn parse_grouped_expression(&mut self) -> Result<Expression, CompilationError<'a>> {
         let l_paren_token = self.next_token()?;
@@ -442,6 +473,7 @@ impl<'a> Parser<'a> {
             TokenKind::LParen => self.parse_grouped_expression(),
             TokenKind::KWTrue | TokenKind::KWFalse => self.parse_boolean(),
             TokenKind::Minus | TokenKind::Bang => self.parse_prefix_expression(),
+            TokenKind::Unit => self.parse_unit(),
             otherwise => Err(CompilationError::ParserError(
                 ParserError::unknow_operator_in_expression(
                     otherwise,
@@ -482,13 +514,20 @@ impl<'a> Parser<'a> {
 
     fn parse_type_annotation(&mut self) -> Result<Type, CompilationError<'a>> {
         match self.peek_token_kind()? {
-            TokenKind::Identifier => {
-                let token = self.lexer.next().expect("Never fails");
+            TokenKind::Identifier | TokenKind::Unit => {
+                let token = self.next_token()?;
                 Ok(Type::Name(
                     self.source_file.borrow().span_text(&token.span).to_string(),
                 ))
             }
-            _ => todo!(),
+            _ => {
+                let token = self.peek_token()?;
+                Err(CompilationError::ParserError(ParserError::expected_type(
+                    self.source_file.borrow().span_text(&token.span).to_string(),
+                    token.span,
+                    &self.source_file,
+                )))
+            }
         }
     }
 

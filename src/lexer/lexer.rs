@@ -176,8 +176,7 @@ impl<'a> Iterator for Lexer<'a> {
                 '(' => match self.source.peek() {
                     Some((j, ')')) if self.previous_kind != TokenKind::Identifier => {
                         let end_offset = j + 1;
-                        token =
-                            Some(self.make_token(TokenKind::Identifier, start_offset, end_offset));
+                        token = Some(self.make_token(TokenKind::Unit, start_offset, end_offset));
                         self.source.next();
                     }
                     _ => {

@@ -96,6 +96,7 @@ pub enum Expression {
     Infix(Box<Expression>, InfixOp, Box<Expression>, Span),
     Grouped(Box<Expression>, Span),
     FunctionCall(Box<Expression>, Vec<Expression>, Span),
+    Unit(Span),
 }
 
 impl Expression {
@@ -108,6 +109,7 @@ impl Expression {
             Expression::Identifier(_, span) => span.clone(),
             Expression::Grouped(_, span) => span.clone(),
             Expression::FunctionCall(_, _, span) => span.clone(),
+            Expression::Unit(span) => span.clone(),
         }
     }
 }

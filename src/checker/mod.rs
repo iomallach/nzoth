@@ -4,12 +4,15 @@ use checked_ir::{
     BOOL_TYPE_ID, BuiltInType, CheckedBlock, CheckedExpression, CheckedFuncDeclaration,
     CheckedFunctionBody, CheckedInfixOp, CheckedLetVarDeclaration, CheckedNode,
     CheckedNumericLiteral, CheckedPrefixOp, CheckedReturn, CheckedStatement, CheckedType,
-    FLOAT_TYPE_ID, INT_TYPE_ID, TypeId,
+    FLOAT_TYPE_ID, INT_TYPE_ID, TypeId, UNIT_TYPE_ID,
 };
 
-use crate::ast::{
-    Block, Expression, FuncDeclaration, FuncParameter, LetDeclaration, Node, NumericLiteral,
-    Program, Return, Statement, Type,
+use crate::{
+    ast::{
+        Block, Expression, FuncDeclaration, FuncParameter, LetDeclaration, Node, NumericLiteral,
+        Program, Return, Statement, Type,
+    },
+    source::Span,
 };
 
 pub mod checked_ir;
@@ -27,6 +30,7 @@ impl CompilationUnit {
         types.push(CheckedType::BuiltIn(BuiltInType::Int));
         types.push(CheckedType::BuiltIn(BuiltInType::Bool));
         types.push(CheckedType::BuiltIn(BuiltInType::Float));
+        types.push(CheckedType::BuiltIn(BuiltInType::Unit));
 
         Self {
             scope: Scope::new(None),
@@ -213,6 +217,7 @@ impl Checker {
                 "int" => INT_TYPE_ID,
                 "float" => FLOAT_TYPE_ID,
                 "bool" => BOOL_TYPE_ID,
+                "()" => UNIT_TYPE_ID,
                 _ => todo!("handle unknown types"),
             },
         }
@@ -232,7 +237,8 @@ impl Checker {
                     *span,
                 ),
             },
-            Expression::Bool(val, span) => CheckedExpression::Bool(*val, span.clone()),
+            Expression::Bool(val, span) => CheckedExpression::Bool(*val, *span),
+            Expression::Unit(span) => CheckedExpression::Unit(*span),
             Expression::Identifier(name, span) => {
                 let checked_let_decl = self
                     .comp_unit
@@ -387,7 +393,7 @@ impl Checker {
         let checked_return_type = decl
             .return_type
             .as_ref()
-            .map(|t| self.typecheck_typename(t));
+            .map_or(UNIT_TYPE_ID, |t| self.typecheck_typename(t));
         let return_type = match checked_func_body.statements.last().expect("Never empty") {
             CheckedStatement::Return(ret) => {
                 self.typecheck_func_return_type(ret, checked_return_type)
@@ -455,7 +461,12 @@ impl Checker {
                 expression: expr,
             }));
         } else {
-            todo!("Implicit unit return not implemented")
+            //FIXME: meaningless span. Alternative: all expr statements are of type
+            //unit. No explicit return, rather handled via ast "features"
+            body_statements.push(CheckedStatement::Return(CheckedReturn {
+                expression: CheckedExpression::Unit(Span::default()),
+                span: Span::default(),
+            }))
         }
 
         CheckedFunctionBody {
@@ -464,18 +475,13 @@ impl Checker {
         }
     }
 
-    fn typecheck_func_return_type(
-        &mut self,
-        ret: &CheckedReturn,
-        ret_type: Option<TypeId>,
-    ) -> TypeId {
+    fn typecheck_func_return_type(&mut self, ret: &CheckedReturn, ret_type: TypeId) -> TypeId {
         //TODO: for the sake of simplicity assume the type is always given for now
-        let ret_ty = ret_type.unwrap();
         let ret_exp_ty = ret.expression.type_id();
 
-        if ret_ty != ret_exp_ty {
+        if ret_type != ret_exp_ty {
             todo!("handle error")
         }
-        ret_ty
+        ret_type
     }
 }

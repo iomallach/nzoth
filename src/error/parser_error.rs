@@ -78,6 +78,14 @@ impl<'a> ParserError<'a> {
             source,
         }
     }
+
+    pub fn expected_type(found: String, span: Span, source: &'a RefCell<SourceFile<'a>>) -> Self {
+        Self {
+            error: ParserErrorKind::ExpectedType { found },
+            span,
+            source,
+        }
+    }
 }
 
 impl<'a> std::error::Error for ParserError<'a> {
@@ -115,6 +123,9 @@ pub enum ParserErrorKind {
         found: TokenKind,
     },
     ExpectedSemicolon,
+    ExpectedType {
+        found: String,
+    },
 }
 
 impl std::error::Error for ParserErrorKind {}
@@ -137,6 +148,9 @@ impl std::fmt::Display for ParserErrorKind {
             }
             Self::ExpectedSemicolon => {
                 write!(f, "Expected semicolon")
+            }
+            Self::ExpectedType { found } => {
+                write!(f, "Expected type, found {found}")
             }
         }
     }

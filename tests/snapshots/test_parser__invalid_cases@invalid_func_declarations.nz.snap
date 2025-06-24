@@ -8,3 +8,6 @@ Expected semicolon at line 1, column 5:
 Expected semicolon at line 6, column 7:
     baz
        ^
+Expected type, found { at line 10, column 26:
+let fn foo(baz :: int) :: {
+                          ^

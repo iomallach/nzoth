@@ -7,3 +7,7 @@ let fn foo(bar :: int, baz :: float) :: float {
     baz
     return bar + baz;
 }
+
+let fn foo(baz :: int) :: {
+  baz
+}

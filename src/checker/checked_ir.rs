@@ -8,6 +8,7 @@ pub type TypeId = usize;
 pub const INT_TYPE_ID: TypeId = 0;
 pub const BOOL_TYPE_ID: TypeId = 1;
 pub const FLOAT_TYPE_ID: TypeId = 2;
+pub const UNIT_TYPE_ID: TypeId = 3;
 
 #[derive(Clone, Debug)]
 pub enum CheckedNode {
@@ -70,6 +71,7 @@ pub enum CheckedExpression {
         TypeId,
         Span,
     ),
+    Unit(Span),
 }
 
 impl CheckedExpression {
@@ -80,6 +82,7 @@ impl CheckedExpression {
             CheckedExpression::Variable(_, _, span) => *span,
             CheckedExpression::Prefix(_, _, _, span) => *span,
             CheckedExpression::Infix(_, _, _, _, span) => *span,
+            CheckedExpression::Unit(span) => *span,
         }
     }
 }
@@ -92,6 +95,7 @@ impl CheckedExpression {
             Self::Variable(_, tid, _) => *tid,
             Self::Prefix(_, _, tid, _) => *tid,
             Self::Infix(_, _, _, tid, _) => *tid,
+            Self::Unit(_) => UNIT_TYPE_ID,
         }
     }
 }
@@ -127,6 +131,7 @@ pub enum BuiltInType {
     Int,
     Float,
     Bool,
+    Unit,
 }
 
 impl BuiltInType {
@@ -135,6 +140,7 @@ impl BuiltInType {
             Self::Int => true,
             Self::Float => true,
             Self::Bool => false,
+            Self::Unit => false,
         }
     }
 
@@ -143,6 +149,7 @@ impl BuiltInType {
             Self::Int => false,
             Self::Float => false,
             Self::Bool => true,
+            Self::Unit => false,
         }
     }
 }

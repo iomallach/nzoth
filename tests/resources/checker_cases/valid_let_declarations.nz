@@ -5,3 +5,7 @@ let fn main() :: int {
   let foobar :: float = 7.3;
   return 1;
 }
+
+let fn foo() {
+  let bar = 2;
+}
