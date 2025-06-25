@@ -1,0 +1,10 @@
+---
+source: tests/test_checker.rs
+input_file: tests/resources/checker_cases/invalid_let_declarations.nz
+---
+Mismatched types, expected `int`, found `float` at line 1, column 19:
+  let bar :: int = 1.1;
+                   ^^^
+Mismatched types, expected `float`, found `int` at line 2, column 21:
+  let baz :: float = 1;
+                     ^

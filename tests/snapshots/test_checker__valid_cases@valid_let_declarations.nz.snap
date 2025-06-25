@@ -753,4 +753,26 @@ CompilationUnit {
             Unit,
         ),
     ],
+    source: RefCell {
+        value: SourceFile {
+            id: FileId(
+                0,
+            ),
+            name: "valid_let_declarations.nz",
+            contents: "let fn main() :: int {\n  let foo = 1;\n  let bar :: int = 1;\n  let baz = 3.4;\n  let foobar :: float = 7.3;\n  return 1;\n}\n\nlet fn foo() {\n  let bar = 2;\n}\n",
+            line_offsets: [
+                0,
+                23,
+                38,
+                60,
+                77,
+                106,
+                118,
+                120,
+                121,
+                136,
+                151,
+            ],
+        },
+    },
 }

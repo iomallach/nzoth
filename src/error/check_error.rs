@@ -22,6 +22,14 @@ impl<'a> CheckError<'a> {
             source,
         }
     }
+
+    pub fn unknown_type(name: String, span: Span, source: &'a RefCell<SourceFile<'a>>) -> Self {
+        Self {
+            error: CheckErrorKind::UnknownType { name },
+            span,
+            source,
+        }
+    }
 }
 
 impl<'a> std::fmt::Display for CheckError<'a> {
@@ -49,6 +57,7 @@ impl<'a> std::error::Error for CheckError<'a> {
 #[derive(Debug)]
 pub enum CheckErrorKind {
     MismatchedTypes { expected: String, found: String },
+    UnknownType { name: String },
 }
 
 impl std::fmt::Display for CheckErrorKind {
@@ -57,6 +66,7 @@ impl std::fmt::Display for CheckErrorKind {
             Self::MismatchedTypes { expected, found } => {
                 write!(f, "Mismatched types, expected {expected}, found {found}")
             }
+            Self::UnknownType { name } => write!(f, "Can't find type {name} in current scope"),
         }
     }
 }

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{cell::RefCell, collections::HashMap};
 
 use checked_ir::{
     BOOL_TYPE_ID, BuiltInType, CheckedBlock, CheckedExpression, CheckedFuncDeclaration,
@@ -12,20 +12,22 @@ use crate::{
         Block, Expression, FuncDeclaration, FuncParameter, LetDeclaration, Node, NumericLiteral,
         Program, Return, Statement, Type,
     },
-    source::Span,
+    error::{CompilationError, check_error::CheckError},
+    source::{SourceFile, Span},
 };
 
 pub mod checked_ir;
 
 #[derive(Debug)]
-pub struct CompilationUnit {
+pub struct CompilationUnit<'a> {
     scope: Scope,
     functions: Vec<CheckedFuncDeclaration>,
     types: Vec<CheckedType>,
+    source: &'a RefCell<SourceFile<'a>>,
 }
 
-impl CompilationUnit {
-    pub fn new() -> Self {
+impl<'a> CompilationUnit<'a> {
+    pub fn new(source: &'a RefCell<SourceFile<'a>>) -> Self {
         let mut types = vec![];
         types.push(CheckedType::BuiltIn(BuiltInType::Int));
         types.push(CheckedType::BuiltIn(BuiltInType::Bool));
@@ -36,6 +38,7 @@ impl CompilationUnit {
             scope: Scope::new(None),
             functions: vec![],
             types,
+            source,
         }
     }
 
@@ -135,15 +138,19 @@ impl Scope {
     }
 }
 
-pub struct Checker {
-    pub comp_unit: CompilationUnit,
+pub struct Checker<'a> {
+    pub comp_unit: CompilationUnit<'a>,
+    pub errors: Vec<CompilationError<'a>>,
 }
 
-impl Checker {
-    pub fn new() -> Self {
-        let comp_unit = CompilationUnit::new();
+impl<'a> Checker<'a> {
+    pub fn new(source: &'a RefCell<SourceFile<'a>>) -> Self {
+        let comp_unit = CompilationUnit::new(source);
 
-        Self { comp_unit }
+        Self {
+            comp_unit,
+            errors: vec![],
+        }
     }
 
     pub fn typecheck_program(&mut self, program: Program) {
@@ -167,17 +174,20 @@ impl Checker {
         }
     }
 
-    pub fn typecheck_statement(&mut self, stmt: &Statement) -> CheckedStatement {
+    pub fn typecheck_statement(
+        &mut self,
+        stmt: &Statement,
+    ) -> Result<CheckedStatement, CompilationError<'a>> {
         match stmt {
-            Statement::Node(node) => CheckedStatement::Node(self.typecheck_node(node)),
-            Statement::Expression(expr_stmt) => {
-                CheckedStatement::Expression(self.typecheck_expression(&expr_stmt.expression))
-            }
+            Statement::Node(node) => Ok(CheckedStatement::Node(self.typecheck_node(node))),
+            Statement::Expression(expr_stmt) => Ok(CheckedStatement::Expression(
+                self.typecheck_expression(&expr_stmt.expression),
+            )),
             Statement::LetDeclaration(ld) => {
-                let (decl, expr) = self.typecheck_let_declaration(ld);
-                CheckedStatement::CheckedLetVarDeclaration(decl, expr)
+                let (decl, expr) = self.typecheck_let_declaration(ld)?;
+                Ok(CheckedStatement::CheckedLetVarDeclaration(decl, expr))
             }
-            Statement::Return(ret) => CheckedStatement::Return(self.typecheck_return(ret)),
+            Statement::Return(ret) => Ok(CheckedStatement::Return(self.typecheck_return(ret))),
         }
     }
 
@@ -191,13 +201,20 @@ impl Checker {
     pub fn typecheck_let_declaration(
         &mut self,
         decl: &LetDeclaration,
-    ) -> (CheckedLetVarDeclaration, CheckedExpression) {
+    ) -> Result<(CheckedLetVarDeclaration, CheckedExpression), CompilationError<'a>> {
         let checked_expr = self.typecheck_expression(&decl.expression);
 
         if decl.ty.is_some()
-            && self.typecheck_typename(decl.ty.as_ref().unwrap()) != checked_expr.type_id()
+            && self.typecheck_typename(decl.ty.as_ref().unwrap())? != checked_expr.type_id()
         {
-            todo!("handle type mismatch");
+            let decl_type_id = self.typecheck_typename(decl.ty.as_ref().unwrap())?;
+            self.errors
+                .push(CompilationError::CheckError(CheckError::mismatched_types(
+                    format!("{}", self.comp_unit.find_type_by_id(decl_type_id),),
+                    format!("{}", self.comp_unit.find_type_by_id(checked_expr.type_id())),
+                    decl.expression.span(),
+                    self.comp_unit.source,
+                )));
         }
 
         let checked_decl = CheckedLetVarDeclaration {
@@ -208,17 +225,21 @@ impl Checker {
         self.comp_unit
             .add_let_var_decl_to_scope(checked_decl.clone());
 
-        (checked_decl, checked_expr)
+        Ok((checked_decl, checked_expr))
     }
 
-    pub fn typecheck_typename(&mut self, ty: &Type) -> TypeId {
+    pub fn typecheck_typename(&mut self, ty: &Type) -> Result<TypeId, CompilationError<'a>> {
         match ty {
-            Type::Name(name) => match name.as_str() {
-                "int" => INT_TYPE_ID,
-                "float" => FLOAT_TYPE_ID,
-                "bool" => BOOL_TYPE_ID,
-                "()" => UNIT_TYPE_ID,
-                _ => todo!("handle unknown types"),
+            Type::Name(name, span) => match name.as_str() {
+                "int" => Ok(INT_TYPE_ID),
+                "float" => Ok(FLOAT_TYPE_ID),
+                "bool" => Ok(BOOL_TYPE_ID),
+                "()" => Ok(UNIT_TYPE_ID),
+                _ => Err(CompilationError::CheckError(CheckError::unknown_type(
+                    name.to_string(),
+                    *span,
+                    self.comp_unit.source,
+                ))),
             },
         }
     }
@@ -369,7 +390,10 @@ impl Checker {
         let mut checked_nodes = vec![];
         let mut checked_last_expr = None;
         for node in &block.nodes {
-            checked_nodes.push(self.typecheck_statement(node));
+            match self.typecheck_statement(node) {
+                Ok(stmt) => checked_nodes.push(stmt),
+                Err(e) => self.errors.push(e),
+            }
         }
 
         if let Some(expr_stmt) = &block.last_expression {
@@ -390,10 +414,16 @@ impl Checker {
         let checked_params = self.typecheck_function_parameters(&decl.paramemetrs);
         let checked_body_block = self.typecheck_block(&decl.body);
         let checked_func_body = self.typecheck_func_body_block(checked_body_block);
-        let checked_return_type = decl
-            .return_type
-            .as_ref()
-            .map_or(UNIT_TYPE_ID, |t| self.typecheck_typename(t));
+        let checked_return_type = match &decl.return_type {
+            Some(t) => match self.typecheck_typename(t) {
+                Ok(tid) => tid,
+                Err(e) => {
+                    self.errors.push(e);
+                    UNIT_TYPE_ID
+                }
+            },
+            None => UNIT_TYPE_ID,
+        };
         let return_type = match checked_func_body.statements.last().expect("Never empty") {
             CheckedStatement::Return(ret) => {
                 self.typecheck_func_return_type(ret, checked_return_type)
@@ -423,9 +453,16 @@ impl Checker {
     ) -> Vec<CheckedLetVarDeclaration> {
         let mut checked_params = vec![];
         for param in params {
+            let param_type = match self.typecheck_typename(&param.ty) {
+                Ok(ty) => ty,
+                Err(e) => {
+                    self.errors.push(e);
+                    UNIT_TYPE_ID
+                }
+            };
             let checked_parameter = CheckedLetVarDeclaration {
                 name: param.identifier.clone(),
-                ty: self.typecheck_typename(&param.ty),
+                ty: param_type,
                 span: param.span,
             };
             self.comp_unit

@@ -206,6 +206,7 @@ impl<'a> Parser<'a> {
                         .borrow()
                         .span_text(&param_type_token.span)
                         .to_string(),
+                    param_type_token.span,
                 ),
                 span: param_identifier_token.span,
             });
@@ -518,6 +519,7 @@ impl<'a> Parser<'a> {
                 let token = self.next_token()?;
                 Ok(Type::Name(
                     self.source_file.borrow().span_text(&token.span).to_string(),
+                    token.span,
                 ))
             }
             _ => {

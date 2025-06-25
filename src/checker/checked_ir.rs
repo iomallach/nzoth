@@ -126,6 +126,14 @@ impl CheckedType {
     }
 }
 
+impl std::fmt::Display for CheckedType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::BuiltIn(t) => write!(f, "{t}"),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum BuiltInType {
     Int,
@@ -150,6 +158,17 @@ impl BuiltInType {
             Self::Float => false,
             Self::Bool => true,
             Self::Unit => false,
+        }
+    }
+}
+
+impl std::fmt::Display for BuiltInType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BuiltInType::Int => write!(f, "`int`"),
+            BuiltInType::Float => write!(f, "`float`"),
+            BuiltInType::Bool => write!(f, "`bool`"),
+            BuiltInType::Unit => write!(f, "`unit`"),
         }
     }
 }

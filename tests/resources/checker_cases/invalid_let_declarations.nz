@@ -1,0 +1,4 @@
+let fn foo() {
+  let bar :: int = 1.1;
+  let baz :: float = 1;
+}
