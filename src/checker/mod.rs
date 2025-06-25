@@ -4,7 +4,7 @@ use checked_ir::{
     BOOL_TYPE_ID, BuiltInType, CheckedBlock, CheckedExpression, CheckedFuncDeclaration,
     CheckedFunctionBody, CheckedInfixOp, CheckedLetVarDeclaration, CheckedNode,
     CheckedNumericLiteral, CheckedPrefixOp, CheckedReturn, CheckedStatement, CheckedType,
-    FLOAT_TYPE_ID, INT_TYPE_ID, TypeId, UNIT_TYPE_ID,
+    FLOAT_TYPE_ID, INT_TYPE_ID, TypeId, UNIT_TYPE_ID, UNKNOWN_TYPE_ID,
 };
 
 use crate::{
@@ -33,6 +33,7 @@ impl<'a> CompilationUnit<'a> {
         types.push(CheckedType::BuiltIn(BuiltInType::Bool));
         types.push(CheckedType::BuiltIn(BuiltInType::Float));
         types.push(CheckedType::BuiltIn(BuiltInType::Unit));
+        types.push(CheckedType::BuiltIn(BuiltInType::Unknown));
 
         Self {
             scope: Scope::new(None),
@@ -261,10 +262,23 @@ impl<'a> Checker<'a> {
             Expression::Bool(val, span) => CheckedExpression::Bool(*val, *span),
             Expression::Unit(span) => CheckedExpression::Unit(*span),
             Expression::Identifier(name, span) => {
-                let checked_let_decl = self
-                    .comp_unit
-                    .find_let_var_decl_in_scope(name)
-                    .expect("Might actually panic, needs handling");
+                let checked_let_decl = match self.comp_unit.find_let_var_decl_in_scope(name) {
+                    Some(decl) => decl,
+                    None => {
+                        self.errors.push(CompilationError::CheckError(
+                            CheckError::unbound_variable(
+                                name.to_string(),
+                                *span,
+                                self.comp_unit.source,
+                            ),
+                        ));
+                        CheckedLetVarDeclaration {
+                            name: name.to_string(),
+                            ty: UNKNOWN_TYPE_ID,
+                            span: Span::default(),
+                        }
+                    }
+                };
                 let checked_type_id = checked_let_decl.ty;
                 CheckedExpression::Variable(checked_let_decl, checked_type_id, *span)
             }
@@ -298,7 +312,22 @@ impl<'a> Checker<'a> {
                             *span,
                         )
                     }
-                    _ => todo!("Handle these cases"),
+                    _ => {
+                        self.errors.push(CompilationError::CheckError(
+                            CheckError::cannot_apply_un_op(
+                                checked_prefix_op.to_string(),
+                                checked_expr_type.to_string(),
+                                expr.span(),
+                                self.comp_unit.source,
+                            ),
+                        ));
+                        CheckedExpression::Prefix(
+                            checked_prefix_op,
+                            Box::new(checked_expr),
+                            UNKNOWN_TYPE_ID,
+                            *span,
+                        )
+                    }
                 }
             }
             Expression::Infix(left, op, right, span) => {
@@ -328,7 +357,22 @@ impl<'a> Checker<'a> {
                                 *span,
                             )
                         } else {
-                            todo!("Handle these cases")
+                            self.errors.push(CompilationError::CheckError(
+                                CheckError::cannot_apply_bin_op(
+                                    checked_infix_op.to_string(),
+                                    left_type.to_string(),
+                                    right_type.to_string(),
+                                    *span,
+                                    self.comp_unit.source,
+                                ),
+                            ));
+                            CheckedExpression::Infix(
+                                Box::new(checked_left_expr),
+                                checked_infix_op,
+                                Box::new(checked_right_expr),
+                                UNKNOWN_TYPE_ID,
+                                *span,
+                            )
                         }
                     }
                     CheckedInfixOp::LessThan
@@ -347,7 +391,22 @@ impl<'a> Checker<'a> {
                                 *span,
                             )
                         } else {
-                            todo!("Handle these cases")
+                            self.errors.push(CompilationError::CheckError(
+                                CheckError::cannot_apply_bin_op(
+                                    checked_infix_op.to_string(),
+                                    left_type.to_string(),
+                                    right_type.to_string(),
+                                    *span,
+                                    self.comp_unit.source,
+                                ),
+                            ));
+                            CheckedExpression::Infix(
+                                Box::new(checked_left_expr),
+                                checked_infix_op,
+                                Box::new(checked_right_expr),
+                                UNKNOWN_TYPE_ID,
+                                *span,
+                            )
                         }
                     }
                     CheckedInfixOp::Assignment => {
@@ -360,7 +419,22 @@ impl<'a> Checker<'a> {
                                 *span,
                             )
                         } else {
-                            todo!("Handle these cases")
+                            self.errors.push(CompilationError::CheckError(
+                                CheckError::cannot_apply_bin_op(
+                                    checked_infix_op.to_string(),
+                                    left_type.to_string(),
+                                    right_type.to_string(),
+                                    *span,
+                                    self.comp_unit.source,
+                                ),
+                            ));
+                            CheckedExpression::Infix(
+                                Box::new(checked_left_expr),
+                                checked_infix_op,
+                                Box::new(checked_right_expr),
+                                UNKNOWN_TYPE_ID,
+                                *span,
+                            )
                         }
                     }
                     CheckedInfixOp::Equals | CheckedInfixOp::NotEquals => {
@@ -376,7 +450,22 @@ impl<'a> Checker<'a> {
                                 *span,
                             )
                         } else {
-                            todo!("Handle these cases")
+                            self.errors.push(CompilationError::CheckError(
+                                CheckError::cannot_apply_bin_op(
+                                    checked_infix_op.to_string(),
+                                    left_type.to_string(),
+                                    right_type.to_string(),
+                                    *span,
+                                    self.comp_unit.source,
+                                ),
+                            ));
+                            CheckedExpression::Infix(
+                                Box::new(checked_left_expr),
+                                checked_infix_op,
+                                Box::new(checked_right_expr),
+                                UNKNOWN_TYPE_ID,
+                                *span,
+                            )
                         }
                     }
                 }
@@ -512,13 +601,20 @@ impl<'a> Checker<'a> {
         }
     }
 
-    fn typecheck_func_return_type(&mut self, ret: &CheckedReturn, ret_type: TypeId) -> TypeId {
-        //TODO: for the sake of simplicity assume the type is always given for now
-        let ret_exp_ty = ret.expression.type_id();
+    fn typecheck_func_return_type(&mut self, ret: &CheckedReturn, ret_type_id: TypeId) -> TypeId {
+        let ret_exp_type_id = ret.expression.type_id();
 
-        if ret_type != ret_exp_ty {
-            todo!("handle error")
+        if ret_type_id != ret_exp_type_id {
+            let ret_type = self.comp_unit.find_type_by_id(ret_type_id);
+            let ret_exp_type = self.comp_unit.find_type_by_id(ret_exp_type_id);
+            self.errors
+                .push(CompilationError::CheckError(CheckError::mismatched_types(
+                    ret_type.to_string(),
+                    ret_exp_type.to_string(),
+                    ret.span,
+                    self.comp_unit.source,
+                )));
         }
-        ret_type
+        ret_type_id
     }
 }

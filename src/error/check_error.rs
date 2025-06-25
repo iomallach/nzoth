@@ -30,6 +30,41 @@ impl<'a> CheckError<'a> {
             source,
         }
     }
+
+    pub fn unbound_variable(name: String, span: Span, source: &'a RefCell<SourceFile<'a>>) -> Self {
+        Self {
+            error: CheckErrorKind::UnboundVariable { name },
+            span,
+            source,
+        }
+    }
+
+    pub fn cannot_apply_bin_op(
+        op: String,
+        left: String,
+        right: String,
+        span: Span,
+        source: &'a RefCell<SourceFile<'a>>,
+    ) -> Self {
+        Self {
+            error: CheckErrorKind::CannotApplyBinOp { op, left, right },
+            span,
+            source,
+        }
+    }
+
+    pub fn cannot_apply_un_op(
+        op: String,
+        right: String,
+        span: Span,
+        source: &'a RefCell<SourceFile<'a>>,
+    ) -> Self {
+        Self {
+            error: CheckErrorKind::CannotApplyUnOp { op, right },
+            span,
+            source,
+        }
+    }
 }
 
 impl<'a> std::fmt::Display for CheckError<'a> {
@@ -56,8 +91,25 @@ impl<'a> std::error::Error for CheckError<'a> {
 
 #[derive(Debug)]
 pub enum CheckErrorKind {
-    MismatchedTypes { expected: String, found: String },
-    UnknownType { name: String },
+    MismatchedTypes {
+        expected: String,
+        found: String,
+    },
+    UnknownType {
+        name: String,
+    },
+    UnboundVariable {
+        name: String,
+    },
+    CannotApplyBinOp {
+        op: String,
+        left: String,
+        right: String,
+    },
+    CannotApplyUnOp {
+        op: String,
+        right: String,
+    },
 }
 
 impl std::fmt::Display for CheckErrorKind {
@@ -67,6 +119,11 @@ impl std::fmt::Display for CheckErrorKind {
                 write!(f, "Mismatched types, expected {expected}, found {found}")
             }
             Self::UnknownType { name } => write!(f, "Can't find type {name} in current scope"),
+            Self::UnboundVariable { name } => write!(f, "Can't find variable `{name}`"),
+            Self::CannotApplyBinOp { op, left, right } => {
+                write!(f, "Can't apply `{op}` to {left} and {right}")
+            }
+            Self::CannotApplyUnOp { op, right } => write!(f, "Can't apply `{op}` to {right}"),
         }
     }
 }

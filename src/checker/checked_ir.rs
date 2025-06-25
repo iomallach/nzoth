@@ -9,6 +9,7 @@ pub const INT_TYPE_ID: TypeId = 0;
 pub const BOOL_TYPE_ID: TypeId = 1;
 pub const FLOAT_TYPE_ID: TypeId = 2;
 pub const UNIT_TYPE_ID: TypeId = 3;
+pub const UNKNOWN_TYPE_ID: TypeId = 4;
 
 #[derive(Clone, Debug)]
 pub enum CheckedNode {
@@ -140,6 +141,7 @@ pub enum BuiltInType {
     Float,
     Bool,
     Unit,
+    Unknown,
 }
 
 impl BuiltInType {
@@ -149,6 +151,7 @@ impl BuiltInType {
             Self::Float => true,
             Self::Bool => false,
             Self::Unit => false,
+            Self::Unknown => false,
         }
     }
 
@@ -158,6 +161,7 @@ impl BuiltInType {
             Self::Float => false,
             Self::Bool => true,
             Self::Unit => false,
+            Self::Unknown => false,
         }
     }
 }
@@ -169,6 +173,7 @@ impl std::fmt::Display for BuiltInType {
             BuiltInType::Float => write!(f, "`float`"),
             BuiltInType::Bool => write!(f, "`bool`"),
             BuiltInType::Unit => write!(f, "`unit`"),
+            BuiltInType::Unknown => write!(f, "`unknown`"),
         }
     }
 }
@@ -183,6 +188,15 @@ pub enum CheckedNumericLiteral {
 pub enum CheckedPrefixOp {
     Negation,
     Not,
+}
+
+impl std::fmt::Display for CheckedPrefixOp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Negation => write!(f, "-"),
+            Self::Not => write!(f, "!"),
+        }
+    }
 }
 
 impl From<PrefixOp> for CheckedPrefixOp {
@@ -207,6 +221,24 @@ pub enum CheckedInfixOp {
     LessThanEquals,
     GreaterThan,
     GreaterThanEquals,
+}
+
+impl std::fmt::Display for CheckedInfixOp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CheckedInfixOp::Add => write!(f, "+"),
+            CheckedInfixOp::Assignment => write!(f, "="),
+            CheckedInfixOp::Subtract => write!(f, "-"),
+            CheckedInfixOp::Multiply => write!(f, "*"),
+            CheckedInfixOp::Divide => write!(f, "/"),
+            CheckedInfixOp::Equals => write!(f, "=="),
+            CheckedInfixOp::NotEquals => write!(f, "!="),
+            CheckedInfixOp::LessThan => write!(f, "<"),
+            CheckedInfixOp::LessThanEquals => write!(f, "<="),
+            CheckedInfixOp::GreaterThan => write!(f, ">"),
+            CheckedInfixOp::GreaterThanEquals => write!(f, ">="),
+        }
+    }
 }
 
 impl From<InfixOp> for CheckedInfixOp {
