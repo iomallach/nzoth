@@ -8,3 +8,27 @@ Mismatched types, expected `int`, found `float` at line 1, column 19:
 Mismatched types, expected `float`, found `int` at line 2, column 21:
   let baz :: float = 1;
                      ^
+Mismatched types, expected `int`, found `float` at line 6, column 2:
+  3.4
+  ^^^
+Mismatched types, expected `float`, found `int` at line 10, column 2:
+  return 42;
+  ^^^^^^^^^
+Can't find variable `foo` at line 14, column 12:
+  let bar = foo + 1;
+            ^^^
+Can't apply `+` to `unknown` and `int` at line 14, column 12:
+  let bar = foo + 1;
+            ^^^
+Can't apply `+` to `float` and `int` at line 18, column 12:
+  let bar = 3.4 + 1;
+            ^^^
+Can't apply `!` to `unknown` at line 19, column 16:
+  let foobar = !bar;
+                ^^^
+Can't apply `!` to `float` at line 20, column 16:
+  let barfoo = !3.67;
+                ^^^^
+Can't apply `*` to `unknown` and `unknown` at line 21, column 15:
+  let barbaz = foobar * barfoo;
+               ^^^^^^

@@ -56,3 +56,8 @@ fn test_valid_let_declarations() {
 fn test_invalid_let_declarations() {
     test_invalid_cases("resources/checker_cases/invalid_let_declarations.nz");
 }
+
+#[test]
+fn test_invalid_expressions() {
+    test_invalid_cases("resources/checker_cases/invalid_expressions.nz");
+}

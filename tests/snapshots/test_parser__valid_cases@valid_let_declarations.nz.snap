@@ -92,6 +92,21 @@ Program {
                                 ty: Some(
                                     Name(
                                         "int",
+                                        Span {
+                                            start: Position {
+                                                offset: 44,
+                                                line: 2,
+                                                column: 13,
+                                            },
+                                            end: Position {
+                                                offset: 47,
+                                                line: 2,
+                                                column: 16,
+                                            },
+                                            file: FileId(
+                                                0,
+                                            ),
+                                        },
                                     ),
                                 ),
                             },

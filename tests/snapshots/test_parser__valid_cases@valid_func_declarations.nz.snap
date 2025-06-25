@@ -12,6 +12,21 @@ Program {
                         identifier: "bar",
                         ty: Name(
                             "int",
+                            Span {
+                                start: Position {
+                                    offset: 18,
+                                    line: 0,
+                                    column: 18,
+                                },
+                                end: Position {
+                                    offset: 21,
+                                    line: 0,
+                                    column: 21,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
                         ),
                         span: Span {
                             start: Position {
@@ -33,6 +48,21 @@ Program {
                         identifier: "baz",
                         ty: Name(
                             "float",
+                            Span {
+                                start: Position {
+                                    offset: 30,
+                                    line: 0,
+                                    column: 30,
+                                },
+                                end: Position {
+                                    offset: 35,
+                                    line: 0,
+                                    column: 35,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
                         ),
                         span: Span {
                             start: Position {
@@ -145,6 +175,21 @@ Program {
                 return_type: Some(
                     Name(
                         "float",
+                        Span {
+                            start: Position {
+                                offset: 40,
+                                line: 0,
+                                column: 40,
+                            },
+                            end: Position {
+                                offset: 45,
+                                line: 0,
+                                column: 45,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
                     ),
                 ),
                 span: Span {
@@ -172,6 +217,21 @@ Program {
                         identifier: "bar",
                         ty: Name(
                             "int",
+                            Span {
+                                start: Position {
+                                    offset: 81,
+                                    line: 4,
+                                    column: 18,
+                                },
+                                end: Position {
+                                    offset: 84,
+                                    line: 4,
+                                    column: 21,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
                         ),
                         span: Span {
                             start: Position {
@@ -193,6 +253,21 @@ Program {
                         identifier: "baz",
                         ty: Name(
                             "float",
+                            Span {
+                                start: Position {
+                                    offset: 93,
+                                    line: 4,
+                                    column: 30,
+                                },
+                                end: Position {
+                                    offset: 98,
+                                    line: 4,
+                                    column: 35,
+                                },
+                                file: FileId(
+                                    0,
+                                ),
+                            },
                         ),
                         span: Span {
                             start: Position {
@@ -307,6 +382,21 @@ Program {
                 return_type: Some(
                     Name(
                         "float",
+                        Span {
+                            start: Position {
+                                offset: 103,
+                                line: 4,
+                                column: 40,
+                            },
+                            end: Position {
+                                offset: 108,
+                                line: 4,
+                                column: 45,
+                            },
+                            file: FileId(
+                                0,
+                            ),
+                        },
                     ),
                 ),
                 span: Span {

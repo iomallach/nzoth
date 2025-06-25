@@ -2,3 +2,22 @@ let fn foo() {
   let bar :: int = 1.1;
   let baz :: float = 1;
 }
+
+let fn bar() :: int {
+  3.4
+}
+
+let fn bar() :: float {
+  return 42;
+}
+
+let fn baz() {
+  let bar = foo + 1;
+}
+
+let fn baz() {
+  let bar = 3.4 + 1;
+  let foobar = !bar;
+  let barfoo = !3.67;
+  let barbaz = foobar * barfoo;
+}

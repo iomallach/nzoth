@@ -120,7 +120,7 @@ pub enum NumericLiteral {
     Float(f64),
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub enum Type {
     Name(String, Span),
 }

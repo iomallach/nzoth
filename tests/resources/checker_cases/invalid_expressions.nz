@@ -1,0 +1,13 @@
+let fn main() {
+  3.4 + 1;
+  1 - 0.489;
+  2 * 2.334;
+  43.42 / 43;
+  true > 1;
+  43 < 439.4;
+  432.4 >= false;
+  false <= true;
+  true > false;
+  true == 432.49;
+  934 != false;
+}

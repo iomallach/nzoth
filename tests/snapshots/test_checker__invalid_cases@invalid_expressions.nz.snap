@@ -1,0 +1,37 @@
+---
+source: tests/test_checker.rs
+input_file: tests/resources/checker_cases/invalid_expressions.nz
+---
+Can't apply `+` to `float` and `int` at line 1, column 2:
+  3.4 + 1;
+  ^^^
+Can't apply `-` to `int` and `float` at line 2, column 2:
+  1 - 0.489;
+  ^
+Can't apply `*` to `int` and `float` at line 3, column 2:
+  2 * 2.334;
+  ^
+Can't apply `/` to `float` and `int` at line 4, column 2:
+  43.42 / 43;
+  ^^^^^
+Can't apply `>` to `bool` and `int` at line 5, column 2:
+  true > 1;
+  ^^^^
+Can't apply `<` to `int` and `float` at line 6, column 2:
+  43 < 439.4;
+  ^^
+Can't apply `>=` to `float` and `bool` at line 7, column 2:
+  432.4 >= false;
+  ^^^^^
+Can't apply `<=` to `bool` and `bool` at line 8, column 2:
+  false <= true;
+  ^^^^^
+Can't apply `>` to `bool` and `bool` at line 9, column 2:
+  true > false;
+  ^^^^
+Can't apply `==` to `bool` and `float` at line 10, column 2:
+  true == 432.49;
+  ^^^^
+Can't apply `!=` to `int` and `bool` at line 11, column 2:
+  934 != false;
+  ^^^
